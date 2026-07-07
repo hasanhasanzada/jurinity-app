@@ -1,0 +1,2534 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jurinity — Müqavilə Generatoru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    --ink:#1C2B3A;
+    --ink-light:#2E4356;
+    --paper:#EBE6D9;
+    --paper-white:#FFFEFB;
+    --bronze:#A67C3D;
+    --bronze-dark:#7A5A28;
+    --bordo:#7A2831;
+    --text:#26221D;
+    --text-soft:#635C4F;
+    --border:#D8D0BC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .topbar{
+    background:var(--ink);
+    color:#F3EFE4;
+    padding:22px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .topbar-title{
+    font-family:'Source Serif 4', serif;
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    color: var(--paper-white);
+  }
+  .topbar-sub{
+    font-size:13px;
+    color:#C9CDBF;
+    margin-top:2px;
+  }
+  .topbar-right {
+    display:flex;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .lang-selector {
+    display:flex;
+    background:rgba(253,249,240,0.1);
+    padding:4px;
+    border-radius:6px;
+    border:1px solid rgba(243,239,228,0.2);
+  }
+  .lang-btn {
+    background:transparent;
+    border:none;
+    color:#C9CDBF;
+    padding:6px 12px;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    border-radius:4px;
+    transition:all 0.15s ease;
+  }
+  .lang-btn:hover {
+    color:#F3EFE4;
+  }
+  .lang-btn.active {
+    background:var(--bronze);
+    color:#1C1408;
+  }
+  .topbar-actions{
+    display:flex;
+    gap:10px;
+  }
+  .btn{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    padding:9px 16px;
+    border-radius:4px;
+    border:1px solid rgba(243,239,228,0.35);
+    background:transparent;
+    color:#F3EFE4;
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .btn:hover{ background:rgba(243,239,228,0.12); }
+  .btn.primary{
+    background:var(--bronze);
+    border-color:var(--bronze);
+    color:#1C1408;
+  }
+  .btn.primary:hover{ background:var(--bronze-dark); border-color:var(--bronze-dark); color:#F3EFE4;}
+
+  .tabs{
+    display:flex;
+    gap:4px;
+    padding:0 32px;
+    margin-top:22px;
+  }
+  .tab{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    font-weight:500;
+    padding:12px 22px 11px;
+    background:var(--border);
+    color:var(--text-soft);
+    border:none;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    position:relative;
+    top:1px;
+  }
+  .tab.active{
+    background:var(--paper-white);
+    color:var(--ink);
+  }
+
+  .workspace{
+    display:grid;
+    grid-template-columns: 380px 1fr;
+    gap:0;
+    background:var(--paper-white);
+    margin:0 32px 32px;
+    border-radius:0 8px 8px 8px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+    overflow:hidden;
+  }
+  @media (max-width: 860px){
+    .workspace{ grid-template-columns: 1fr; }
+  }
+
+  .form-panel{
+    padding:28px;
+    border-right:1px solid var(--border);
+    background:#F7F4EC;
+  }
+  .form-panel h3{
+    font-family:'Source Serif 4', serif;
+    font-size:16px;
+    font-weight:600;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .form-panel .hint{
+    font-size:12.5px;
+    color:var(--text-soft);
+    margin:0 0 20px;
+    line-height:1.5;
+  }
+  .field{
+    margin-bottom:14px;
+  }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--text-soft);
+    margin-bottom:5px;
+  }
+  .field input, .field textarea{
+    width:100%;
+    padding:9px 10px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    background:#fff;
+    color:var(--text);
+  }
+  .field input:focus, .field textarea:focus{
+    outline:none;
+    border-color:var(--bronze);
+  }
+  .field textarea{ resize:vertical; min-height:64px; }
+
+  .clauses-block{
+    margin-top:26px;
+    padding-top:18px;
+    border-top:1px solid var(--border);
+  }
+  .clauses-block h4{
+    font-family:'Source Serif 4', serif;
+    font-size:14.5px;
+    font-weight:600;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .clauses-block .hint{ margin-bottom:14px; }
+  .clause-row{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:7px 0;
+    border-bottom:1px solid #EFEADE;
+    font-size:13px;
+  }
+  .clause-row input[type=checkbox]{
+    margin-top:3px;
+    accent-color:var(--bronze);
+    width:15px;
+    height:15px;
+    flex-shrink:0;
+  }
+  .clause-row label{ color:var(--text); cursor:pointer; }
+  .custom-clause{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:5px;
+    padding:10px;
+    margin-bottom:10px;
+    position:relative;
+  }
+  .custom-clause input{
+    width:100%;
+    margin-bottom:6px;
+    padding:7px 8px;
+    font-size:13px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    font-weight:500;
+  }
+  .custom-clause textarea{
+    width:100%;
+    padding:7px 8px;
+    font-size:13px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    min-height:56px;
+    resize:vertical;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .remove-clause-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:none;
+    border:none;
+    color:var(--bordo);
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+    padding:2px 4px;
+  }
+  .remove-clause-btn:hover{ opacity:0.7; }
+  .add-clause-btn{
+    width:100%;
+    padding:9px;
+    font-size:13px;
+    font-weight:500;
+    border:1px dashed var(--bronze);
+    border-radius:5px;
+    background:none;
+    color:var(--bronze-dark);
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .add-clause-btn:hover{ background:#FAF3E6; }
+
+  .doc-panel{
+    padding:40px 48px;
+    position:relative;
+    display:flex;
+    justify-content:center;
+    user-select: text;
+  }
+  .paper{
+    width:100%;
+    max-width:660px;
+    background:var(--paper-white);
+    padding:52px 48px 60px;
+    box-shadow:0 0 0 1px var(--border), 0 6px 18px rgba(28,43,58,0.10);
+    font-family:'Source Serif 4', serif;
+    position:relative;
+    min-height:500px;
+  }
+  .paper h1{
+    text-align:center;
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .paper .doc-meta{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--text-soft);
+    font-family:'IBM Plex Sans', sans-serif;
+    margin-bottom:30px;
+  }
+  .paper h2{
+    font-size:14px;
+    font-weight:700;
+    margin:22px 0 8px;
+    color:var(--ink);
+    outline: none;
+    padding: 2px;
+  }
+  .paper h2[contenteditable="true"]:hover, 
+  .paper p[contenteditable="true"]:hover {
+    background-color: #FAF8F2;
+    cursor: text;
+  }
+  .paper h2[contenteditable="true"]:focus, 
+  .paper p[contenteditable="true"]:focus {
+    background-color: #F5EFE0;
+    box-shadow: 0 0 0 2px var(--bronze);
+    border-radius: 2px;
+  }
+  .paper p{
+    font-size:14px;
+    line-height:1.75;
+    margin:0 0 10px;
+    color:var(--text);
+    text-align:justify;
+    outline: none;
+    padding: 2px;
+  }
+  
+  .requisites-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 40px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12.5px;
+  }
+  .requisites-table th, .requisites-table td {
+    border: 1px solid #C4BCA8;
+    padding: 12px;
+    text-align: left;
+    vertical-align: top;
+    width: 50%;
+  }
+  .requisites-table th {
+    background-color: #F7F4EC;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .requisites-table p {
+    margin: 0 0 6px 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .sig-space {
+    margin-top: 35px !important;
+    border-top: 1px dashed var(--text-soft);
+    padding-top: 6px;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  .placeholder-empty{
+    color:#B7AE95;
+    font-style:italic;
+  }
+
+  .seal{
+    position:absolute;
+    top:36px;
+    right:44px;
+    width:104px;
+    height:104px;
+    border:3px solid var(--bordo);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(-14deg);
+    opacity:0;
+    transition:opacity 0.4s ease, transform 0.4s ease;
+    pointer-events:none;
+  }
+  .seal.show{
+    opacity:0.88;
+    transform:rotate(-10deg) scale(1);
+  }
+  .seal-text{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600;
+    font-size:11px;
+    color:var(--bordo);
+    text-align:center;
+    letter-spacing:0.5px;
+    line-height:1.5;
+  }
+
+  .footer-note{
+    max-width:1200px;
+    margin:0 32px 40px;
+    font-size:12.5px;
+    color:var(--text-soft);
+    line-height:1.6;
+    border-top:1px solid var(--border);
+    padding-top:16px;
+  }
+
+  @media print{
+    .topbar, .tabs, .form-panel, .footer-note{ display:none !important; }
+    .workspace{ margin:0; box-shadow:none; border-radius:0; grid-template-columns: 1fr; }
+    .doc-panel{ padding:0; }
+    .paper{ box-shadow:none; max-width:none; }
+    body{ background:#fff; }
+    .paper h2[contenteditable="true"]:hover, 
+    .paper p[contenteditable="true"]:hover { background-color: transparent; }
+  }
+
+  /* ===================== MASTER MODULE NAV (Jurinity) ===================== */
+  .master-nav{
+    background:var(--ink-light);
+    padding:0 32px;
+    display:flex;
+    gap:6px;
+    align-items:flex-end;
+  }
+  .master-nav-btn{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    padding:14px 22px;
+    background:transparent;
+    border:none;
+    color:#C9CDBF;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:all 0.15s ease;
+  }
+  .master-nav-btn:hover{ color:#F3EFE4; }
+  .master-nav-btn.active{
+    color:#F3EFE4;
+    border-bottom-color:var(--bronze);
+  }
+  @media print{ .master-nav{ display:none !important; } }
+
+  /* ===================== MÜQAVİLƏ ANALİZİ MODULU ===================== */
+  #module-analysis{ display:none; }
+
+  /* ===================== SƏNƏD GENERATORU MODULU ===================== */
+  #module-docs{ display:none; }
+  .doc-meta-block{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:12.5px;
+    line-height:1.6;
+    color:var(--text-soft);
+    margin-bottom:18px;
+    outline:none;
+    padding:2px;
+  }
+  .doc-meta-block[contenteditable="true"]:hover{ background-color:#FAF8F2; cursor:text; }
+  .doc-meta-block[contenteditable="true"]:focus{
+    background-color:#F5EFE0;
+    box-shadow:0 0 0 2px var(--bronze);
+    border-radius:2px;
+  }
+  .doc-subject{
+    font-size:14px;
+    margin:0 0 14px;
+    color:var(--text);
+  }
+  .doc-subject strong{ color:var(--ink); }
+  .analysis-topbar{
+    background:var(--ink);
+    color:#F3EFE4;
+    padding:22px 32px;
+  }
+  .analysis-topbar-title{
+    font-family:'Source Serif 4', serif;
+    font-size:26px;
+    font-weight:700;
+    color:var(--paper-white);
+  }
+  .analysis-topbar-sub{
+    font-size:13px;
+    color:#C9CDBF;
+    margin-top:2px;
+  }
+  .analysis-workspace{
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap:24px;
+    margin:24px 32px 40px;
+    align-items:start;
+  }
+  @media (max-width: 900px){
+    .analysis-workspace{ grid-template-columns:1fr; }
+  }
+  .analysis-left, .analysis-right{
+    background:var(--paper-white);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:22px 24px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.06);
+  }
+  .analysis-left h3, .analysis-right h3{
+    font-family:'Source Serif 4', serif;
+    font-size:19px;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .analysis-hint{
+    font-size:12.5px;
+    color:var(--text-soft);
+    margin:0 0 18px;
+    line-height:1.5;
+  }
+  .dropzone{
+    border:2px dashed var(--border);
+    border-radius:8px;
+    padding:34px 18px;
+    text-align:center;
+    cursor:pointer;
+    transition:all 0.15s ease;
+    background:var(--paper);
+  }
+  .dropzone:hover, .dropzone.dragover{
+    border-color:var(--bronze);
+    background:#F4EDDC;
+  }
+  .dropzone-icon{ font-size:34px; margin-bottom:8px; }
+  .dropzone-title{ font-weight:600; font-size:14.5px; color:var(--ink); margin-bottom:4px; }
+  .dropzone-sub{ font-size:12px; color:var(--text-soft); }
+  #analysisFileInput{ display:none; }
+  .file-chip{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-top:16px;
+    font-size:13px;
+  }
+  .file-chip .fc-icon{ font-size:20px; }
+  .file-chip .fc-name{ font-weight:600; color:var(--ink); flex:1; word-break:break-all; }
+  .file-chip .fc-remove{
+    border:none; background:transparent; color:var(--bordo); cursor:pointer; font-size:16px; font-weight:700;
+  }
+  .analysis-btn{
+    margin-top:18px;
+    width:100%;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    padding:12px 16px;
+    border-radius:6px;
+    border:1px solid var(--bronze);
+    background:var(--bronze);
+    color:#1C1408;
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .analysis-btn:hover:not(:disabled){ background:var(--bronze-dark); border-color:var(--bronze-dark); color:#F3EFE4; }
+  .analysis-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .analysis-status{
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--text-soft);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .spinner{
+    width:14px; height:14px;
+    border:2px solid var(--border);
+    border-top-color:var(--bronze);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .extracted-preview{
+    margin-top:18px;
+    border-top:1px solid var(--border);
+    padding-top:14px;
+  }
+  .extracted-preview summary{
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-light);
+  }
+  .extracted-preview-text{
+    margin-top:10px;
+    max-height:260px;
+    overflow-y:auto;
+    font-size:12.5px;
+    line-height:1.6;
+    color:var(--text-soft);
+    white-space:pre-wrap;
+    background:var(--paper);
+    border-radius:6px;
+    padding:12px;
+  }
+  .risk-category{
+    margin-bottom:16px;
+  }
+  .risk-category-title{
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+  }
+  .risk-count-badge{
+    font-size:11px;
+    font-weight:700;
+    background:var(--border);
+    color:var(--text);
+    border-radius:10px;
+    padding:1px 8px;
+  }
+  .risk-item{
+    border-left:3px solid var(--bronze);
+    background:var(--paper);
+    border-radius:0 6px 6px 0;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .risk-item-title{
+    font-size:12.8px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:3px;
+  }
+  .risk-item-detail{
+    font-size:12px;
+    color:var(--text-soft);
+    line-height:1.5;
+    margin-bottom:5px;
+  }
+  .risk-item-suggestion{
+    font-size:12px;
+    line-height:1.5;
+    color:var(--ink-light);
+    background:var(--paper-white);
+    border:1px dashed var(--border);
+    border-radius:5px;
+    padding:7px 9px;
+  }
+  .risk-item-suggestion b{ color:var(--bronze-dark); }
+  .analysis-empty-state{
+    text-align:center;
+    color:var(--text-soft);
+    font-size:13px;
+    padding:40px 10px;
+  }
+  .analysis-empty-state .ee-icon{ font-size:32px; margin-bottom:10px; }
+  .role-select-panel{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:18px 18px 20px;
+  }
+  .role-select-title{
+    font-family:'Source Serif 4', serif;
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .role-select-hint{
+    font-size:12.5px;
+    color:var(--text-soft);
+    line-height:1.5;
+    margin-bottom:14px;
+  }
+  .role-options-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .role-option{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13.5px;
+    color:var(--text);
+    background:var(--paper-white);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:9px 11px;
+    cursor:pointer;
+  }
+  .role-option input{ accent-color:var(--bronze); }
+  .role-custom-row{
+    background:var(--paper-white);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:9px 11px;
+    font-size:13.5px;
+  }
+  .role-custom-row label{ display:flex; align-items:center; gap:8px; cursor:pointer; }
+  .role-custom-row input[type=text]{
+    width:100%;
+    margin-top:8px;
+    padding:7px 9px;
+    font-size:13px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .revised-offer{
+    margin-top:20px;
+    padding-top:18px;
+    border-top:1px solid var(--border);
+  }
+  .revised-offer-title{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:10px;
+    line-height:1.4;
+  }
+  .revised-offer-buttons{
+    display:flex;
+    gap:10px;
+  }
+  .revised-offer-buttons .btn{
+    border-color:var(--border);
+    color:var(--text);
+  }
+  .revised-offer-buttons .btn.primary{
+    color:#1C1408;
+  }
+  .revised-offer-buttons .btn:not(.primary):hover{ background:var(--paper); }
+  #revisedDownloadArea{ margin-top:14px; }
+  .analysis-footer-note{
+    margin:0 32px 40px;
+    font-size:12.5px;
+    color:var(--text-soft);
+    line-height:1.6;
+    border-top:1px solid var(--border);
+    padding-top:16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="master-nav" id="masterNav">
+  <button class="master-nav-btn active" id="navBtnGenerator" onclick="switchModule('generator')">📄 Müqavilə generatoru</button>
+  <button class="master-nav-btn" id="navBtnAnalysis" onclick="switchModule('analysis')">🔎 Müqavilə analizi</button>
+  <button class="master-nav-btn" id="navBtnDocs" onclick="switchModule('docs')">🗂️ Sənəd generatoru</button>
+</div>
+
+<div id="module-generator">
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title" id="mainTitle">Jurinity</div>
+    <div class="topbar-sub" id="mainSub">Məlumatları daxil edin və ya mətni birbaşa redaktə edin</div>
+  </div>
+  <div class="topbar-right">
+    <div class="lang-selector">
+      <button class="lang-btn active" onclick="changeLang('az')">AZ</button>
+      <button class="lang-btn" onclick="changeLang('en')">EN</button>
+      <button class="lang-btn" onclick="changeLang('ru')">RU</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="downloadDocxBtn">.docx kimi yüklə</button>
+      <button class="btn" id="downloadPdfBtn">.pdf kimi yüklə</button>
+      <button class="btn primary" id="printBtn">Çap et</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="workspace">
+  <div class="form-panel">
+    <h3 id="formTitle"></h3>
+    <p class="hint" id="formHint"></p>
+    <div id="formFields"></div>
+  </div>
+  <div class="doc-panel">
+    <div class="paper" id="paper">
+      <div class="seal" id="seal"><div class="seal-text" id="sealText">HAZIRDIR<br>bax və çap et</div></div>
+      <div id="docContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note" id="footerNote">
+  Qeyd: bu, ümumi məlumat xarakterli müqavilə şablonudur. Konkret əməliyyat üçün hüquqi qüvvəyə minmədən öncə mətni öz vəziyyətinizə uyğunlaşdırmağı və zəruri hallarda hüquqşünasla məsləhətləşməyi tövsiyə edirik.
+</div>
+
+</div><!-- /module-generator -->
+
+<div id="module-analysis">
+
+  <div class="analysis-topbar">
+    <div class="analysis-topbar-title">Müqavilə analizi</div>
+    <div class="analysis-topbar-sub">Müqaviləni yükləyin — hüquqi risklər və çatışmayan bənd/yarımbəndlər avtomatik aşkar edilsin, aradan qaldırılması üçün təkliflər verilsin</div>
+  </div>
+
+  <div class="analysis-workspace">
+
+    <!-- LEFT: Upload panel -->
+    <div class="analysis-left">
+      <h3>Sənədi yükləyin</h3>
+      <p class="analysis-hint">Dəstəklənən formatlar: <strong>.pdf, .docx, .doc, .jpeg, .jpg</strong>. Sənəd yalnız bu brauzerdə emal olunur.</p>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">📎</div>
+        <div class="dropzone-title">Faylı bura sürükləyin və ya seçmək üçün klikləyin</div>
+        <div class="dropzone-sub">PDF · DOCX · DOC · JPEG · JPG</div>
+      </div>
+      <input type="file" id="analysisFileInput" accept=".pdf,.docx,.doc,.jpeg,.jpg,.jpeg,image/jpeg,application/pdf,.doc,.docx">
+
+      <div id="fileChipHolder"></div>
+
+      <button class="analysis-btn" id="analyzeBtn" disabled>Müqaviləni təhlil et</button>
+
+      <div class="analysis-status" id="analysisStatus" style="display:none;">
+        <span class="spinner"></span>
+        <span id="analysisStatusText">Sənəd oxunur...</span>
+      </div>
+
+      <details class="extracted-preview" id="extractedPreviewBlock" style="display:none;">
+        <summary>Çıxarılmış mətnə bax</summary>
+        <div class="extracted-preview-text" id="extractedPreviewText"></div>
+      </details>
+    </div>
+
+    <!-- RIGHT: Results panel -->
+    <div class="analysis-right" id="analysisResultsPanel">
+      <h3>Aşkar edilmiş problemlər</h3>
+      <p class="analysis-hint">Nəticələr iki bölmədə göstəriləcək: hüquqi risklər və çatışmayan bənd/yarımbəndlər — hər problem üçün aradan qaldırma təklifi ilə birlikdə.</p>
+      <div class="analysis-empty-state" id="analysisEmptyState">
+        <div class="ee-icon">🗂️</div>
+        Hələ heç bir sənəd təhlil olunmayıb.<br>Soldan müqaviləni yükləyib "Müqaviləni təhlil et" düyməsini basın.
+      </div>
+      <div class="role-select-panel" id="roleSelectionPanel" style="display:none;"></div>
+      <div id="analysisResultsContent" style="display:none;"></div>
+
+      <div class="revised-offer" id="revisedContractOffer" style="display:none;">
+        <div class="revised-offer-title">Düzəliş edilmiş (təklif olunan dəyişikliklər nəzərə alınmış) müqavilə versiyasını istəyirsiniz?</div>
+        <div class="revised-offer-buttons">
+          <button class="btn primary" id="revisedYesBtn">Bəli, hazırlansın</button>
+          <button class="btn" id="revisedNoBtn">Xeyr, lazım deyil</button>
+        </div>
+        <div id="revisedDownloadArea" style="display:none;">
+          <button class="analysis-btn" id="downloadRevisedBtn">📥 Reviziya olunmuş müqaviləni yüklə (.docx)</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="analysis-footer-note">
+    Qeyd: bu təhlil avtomatlaşdırılmış, qayda-əsaslı ilkin skrininqdir və peşəkar hüquqi rəyi əvəz etmir. Aşkarlanmış məqamlar yalnız diqqət çəkmək məqsədi daşıyır; müqavilənin imzalanmasından əvvəl mətnin ixtisaslaşmış hüquqşünas tərəfindən nəzərdən keçirilməsi tövsiyə olunur.
+  </div>
+
+</div><!-- /module-analysis -->
+
+<div id="module-docs">
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Sənəd generatoru</div>
+    <div class="topbar-sub">Sənəd növünü seçin, məlumatları doldurun və ya mətni birbaşa redaktə edin</div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-actions">
+      <button class="btn" id="docsDownloadDocxBtn">.docx kimi yüklə</button>
+      <button class="btn" id="docsDownloadPdfBtn">.pdf kimi yüklə</button>
+      <button class="btn primary" id="docsPrintBtn">Çap et</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs" id="docsTabs"></div>
+
+<div class="workspace">
+  <div class="form-panel">
+    <h3 id="docsFormTitle"></h3>
+    <p class="hint" id="docsFormHint"></p>
+    <div id="docsFormFields"></div>
+  </div>
+  <div class="doc-panel">
+    <div class="paper" id="docsPaper">
+      <div class="seal" id="docsSeal"><div class="seal-text" id="docsSealText">HAZIRDIR<br>bax və çap et</div></div>
+      <div id="docsDocContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">
+  Qeyd: bu, ümumi məlumat xarakterli sənəd şablonudur. Rəsmi qurum və ya hüquqi əməliyyat üçün istifadədən əvvəl mətni öz konkret vəziyyətinizə uyğunlaşdırmağı və zəruri hallarda ixtisaslı mütəxəssislə (hüquqşünas, kadrlar üzrə mütəxəssis və s.) məsləhətləşməyi tövsiyə edirik.
+</div>
+
+</div><!-- /module-docs -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+
+<script>
+let currentLang = "az";
+
+const uiLabels = {
+  az: {
+    title: "Jurinity",
+    sub: "Məlumatları daxil edin və ya mətni birbaşa redaktə edin",
+    seal: "HAZIRDIR<br>bax və çap et",
+    footer: "Qeyd: bu, ümumi məlumat xarakterli müqavilə şablonudur. Konkret əməliyyat üçün hüquqi qüvvəyə minmədən öncə mətni öz vəziyyətinizə uyğunlaşdırmağı və zəruri hallarda hüquqşünasla məsləhətləşməyi tövsiyə edirik.",
+    empty: "[doldurulmayıb]",
+    docx: ".docx kimi yüklə",
+    pdf: ".pdf kimi yüklə",
+    print: "Çap et",
+    clauses: "Bəndlər",
+    clausesHint: "İstəmədiyin bəndin işarəsini götür, ya da öz bəndini əlavə et.",
+    customPlaceholderTitle: "Bəndin başlığı, məs: Məxfilik",
+    customPlaceholderText: "Bəndin mətni...",
+    addClause: "+ Yeni bənd əlavə et",
+    removeClause: "Bu bəndi sil",
+    city: "şəhəri",
+    reqTitle: "Tərəflərin Rekvizitləri və İmzaları",
+    reqName: "Ad / Qurum",
+    reqAddr: "Ünvan",
+    reqTax: "VÖEN / FİN",
+    reqSig: "İmza: _____________________"
+  },
+  en: {
+    title: "Jurinity",
+    sub: "Fill in the fields or click directly on the text to edit manually",
+    seal: "READY<br>view & print",
+    footer: "Note: This is a general information contract template. Before executing for a specific transaction, we recommend tailoring the text to your situation and consulting a legal professional if necessary.",
+    empty: "[empty]",
+    docx: "Download .docx",
+    pdf: "Download .pdf",
+    print: "Print",
+    clauses: "Clauses",
+    clausesHint: "Uncheck any clause you want to remove, or add your own custom clause.",
+    customPlaceholderTitle: "Clause title, e.g., Confidentiality",
+    customPlaceholderText: "Clause text...",
+    addClause: "+ Add New Clause",
+    removeClause: "Remove this clause",
+    city: "City",
+    reqTitle: "Requisites and Signatures of the Parties",
+    reqName: "Name / Entity",
+    reqAddr: "Address",
+    reqTax: "TIN / PIN",
+    reqSig: "Signature: _____________________"
+  },
+  ru: {
+    title: "Jurinity",
+    sub: "Заполните данные или редактируйте текст напрямую, кликнув на него",
+    seal: "ГОТОВО<br>смотри и печать",
+    footer: "Примечание: это типовой шаблон договора информационного характера. Перед подписанием для конкретной сделки рекомендуем адаптировать текст под вашу ситуацию и при необходимости проконсультироваться с юристом.",
+    empty: "[не заполнено]",
+    docx: "Скачать .docx",
+    pdf: "Скачать .pdf",
+    print: "Печать",
+    clauses: "Пункты",
+    clausesHint: "Снимите галочку с ненужного пункта или добавьте свой собственный.",
+    customPlaceholderTitle: "Заголовок пункта, напр: Конфиденциальность",
+    customPlaceholderText: "Текст пункта...",
+    addClause: "+ Добавить новый пункт",
+    removeClause: "Удалить этот пункт",
+    city: "город",
+    reqTitle: "Реквизиты и подписи сторон",
+    reqName: "Имя / Орг.",
+    reqAddr: "Адрес",
+    reqTax: "ИНН / ПИН",
+    reqSig: "Подпись: _____________________"
+  }
+};
+
+const templates = {
+  alqisatqi: {
+    label: { az: "Alqı-satqı müqaviləsi", en: "Sales Agreement", ru: "Договор купли-продажи" },
+    hint: {
+      az: "Mal satışı üçün istifadə olunur; İcraçı-Sifarişçi formatında, qarantiya, qüsurların aradan qaldırılması və hesablaşma şərtlərini əhatə edir.",
+      en: "Used for the sale of goods in a Contractor–Customer format, covering warranty, defect remedies, and settlement terms.",
+      ru: "Используется для продажи товаров в формате Исполнитель–Заказчик, включая гарантию, устранение недостатков и условия расчетов."
+    },
+    roles: {
+      az: { t1: "İcraçı", t2: "Sifarişçi" },
+      en: { t1: "Contractor", t2: "Customer" },
+      ru: { t1: "Исполнитель", t2: "Заказчик" }
+    },
+    mapping: { t1_name: "icrachi", t1_address: "icrachi_unvan", t1_tax: "icrachi_voen", t2_name: "sifarisci", t2_address: "sifarisci_unvan", t2_tax: "sifarisci_voen" },
+    fields: [
+      {id:"muqavile_no", label:{az:"Müqavilə nömrəsi", en:"Agreement number", ru:"Номер договора"}, type:"text", placeholder:"12"},
+      {id:"icrachi", label:{az:"İcraçının adı (şirkət)", en:"Contractor's name (company)", ru:"Наименование Исполнителя (компания)"}, type:"text", placeholder:"\"Nurlan Tech\" MMC"},
+      {id:"icrachi_unvan", label:{az:"İcraçının hüquqi ünvanı", en:"Contractor's legal address", ru:"Юридический адрес Исполнителя"}, type:"text", placeholder:"Bakı ş., Yasamal r., ..."},
+      {id:"icrachi_voen", label:{az:"İcraçının VÖEN-i", en:"Contractor's TIN", ru:"ИНН Исполнителя"}, type:"text", placeholder:"1234567890"},
+      {id:"sifarisci", label:{az:"Sifarişçinin adı (şirkət / şəxs)", en:"Customer's name (company / individual)", ru:"Наименование Заказчика (компания / лицо)"}, type:"text", placeholder:"\"Progress Group\" MMC"},
+      {id:"sifarisci_unvan", label:{az:"Sifarişçinin hüquqi ünvanı", en:"Customer's legal address", ru:"Юридический адрес Заказчика"}, type:"text", placeholder:"Bakı ş., Nəsimi r., ..."},
+      {id:"sifarisci_voen", label:{az:"Sifarişçinin VÖEN-i", en:"Customer's TIN", ru:"ИНН Заказчика"}, type:"text", placeholder:"0987654321"},
+      {id:"mallarin_tesviri", label:{az:"Malların təsviri (Qiymətlərin Razılaşdırılması Protokoluna əsasən)", en:"Description of goods (per the Price Agreement Protocol)", ru:"Описание товаров (согласно Протоколу согласования цен)"}, type:"textarea", placeholder:"10 ədəd noutbuk, model ..."},
+      {id:"meblegh", label:{az:"Ümumi məbləğ, ƏDV daxil (AZN)", en:"Total amount, VAT included (AZN)", ru:"Общая сумма, включая НДС (AZN)"}, type:"text", placeholder:"15000"},
+      {id:"odenis_muddeti", label:{az:"Ödəniş müddəti (iş günü)", en:"Payment period (working days)", ru:"Срок оплаты (рабочих дней)"}, type:"text", placeholder:"15"},
+      {id:"qarantiya_muddeti", label:{az:"Qarantiya müddəti", en:"Warranty period", ru:"Гарантийный срок"}, type:"text", placeholder:"1 il"},
+      {id:"sheher", label:{az:"Bağlanma şəhəri", en:"City of execution", ru:"Город заключения"}, type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:{az:"Bağlanma tarixi", en:"Date of execution", ru:"Дата заключения"}, type:"text", placeholder:"06.07.2026"}
+    ],
+    required: ["icrachi","sifarisci","mallarin_tesviri","meblegh","odenis_muddeti"],
+    build: (v, lang) => {
+      const cityStr = v.sheher || "…";
+      const dateStr = v.tarix || "…";
+      const noStr = v.muqavile_no ? ` № ${fmt(v.muqavile_no)}` : "";
+
+      if (lang === "en") {
+        return {
+          title: "Sales Agreement",
+          meta: `${cityStr}, ${dateStr}${noStr}`,
+          sections: [
+            {h:"Parties", p:`${fmt(v.icrachi)} (legal address: ${fmt(v.icrachi_unvan)}, TIN: ${fmt(v.icrachi_voen)}), hereinafter referred to as the "Contractor", on the one hand, and ${fmt(v.sifarisci)} (legal address: ${fmt(v.sifarisci_unvan)}, TIN: ${fmt(v.sifarisci_voen)}), hereinafter referred to as the "Customer", on the other hand, have entered into this Sales Agreement (hereinafter – the Agreement). The Contractor and the Customer are hereinafter referred to individually as a "Party" and collectively as the "Parties".`},
+            {h:"Subject of the Agreement", p:`The Contractor undertakes, on the terms set out in this Agreement, to transfer into the Customer's ownership the goods specified in the Price Agreement Protocol agreed between the Parties (Annex 1): ${fmt(v.mallarin_tesviri)}. The Customer undertakes to accept the goods and pay for them in the manner set out in this Agreement. Delivery of the goods is formalized by a mutually signed delivery-acceptance act.`},
+            {h:"Payments under the Agreement", p:`The total value of the goods sold under this Agreement amounts to ${fmt(v.meblegh)} AZN (VAT included). Payments are made in Azerbaijani manats, by non-cash transfer, on the basis of the relevant documents (electronic invoices, acts, invoices) provided by the Contractor, no later than ${fmt(v.odenis_muddeti)} working days after the Agreement is signed. Changes to the price, quantity, or configuration of the goods sold are only possible by mutual agreement of the Parties.`},
+            {h:"Remedying Defects", p:`The Contractor provides a warranty for the quality and working condition of the goods sold for a period of ${fmt(v.qarantiya_muddeti)}. The Customer shall give the Contractor written notice of any defects discovered during the warranty period; the Contractor shall, within 3 working days of receiving the notice and at no additional cost to the Customer, remedy the defect or replace the defective goods with new ones. If the defect is not eliminated after repair, or recurs, the Contractor shall replace the goods with new ones.`},
+            {h:"Rights and Obligations of the Parties", p:`The Contractor undertakes to deliver quality, serviceable goods free from the rights of third parties, under a duly signed delivery-acceptance act, and to package the goods so as to ensure their safety under normal conditions; if unagreed discrepancies are discovered on delivery, the Contractor shall provide a proportional price reduction, repair, or replacement with new goods. The Customer undertakes to accept the goods and services provided without delay, to make payments on time, and to notify the Contractor within 3 working days of any breach of the Agreement's terms. The Customer, in turn, is entitled to require a proportional price reduction, repair, or replacement of the goods if the Contractor fails to perform its obligations, or, where this is not possible, to require termination of the Agreement with reimbursement of amounts already paid.`},
+            {h:"Subcontracting", p:`Performance of this Agreement may not be delegated to subcontractors without the consent of each Party. Neither the Contractor nor the Customer may transfer its obligations under this Agreement, in whole or in part, to a third party without the other Party's prior written consent.`},
+            {h:"Liability of the Parties", p:`A Party that fails to perform, or improperly performs, its obligations under this Agreement shall be liable to the other Party in accordance with applicable legislation and shall fully compensate any damage caused. Payment of penalties does not release the Parties from performing their obligations under the Agreement.`},
+            {h:"Force Majeure", p:`Neither Party shall be liable for failure to perform its obligations where this results from an irresistible force arising after signing of the Agreement and beyond the Party's control (acts of government authorities, acts of terrorism, fire, flood, earthquake, landslide, and other natural or man-made disasters). The other Party must be notified of such circumstances immediately, and in writing within 3 working days after the circumstances cease; failure to give timely notice deprives the Party concerned of the right to rely on such circumstances in the future. Lack of solvency of either Party does not constitute force majeure.`},
+            {h:"Dispute Resolution", p:`The Parties shall resolve disputes arising under the Agreement by mutual agreement. If agreement is not reached through negotiations within 30 days, disputes shall be resolved in accordance with the legislation of the Republic of Azerbaijan and the international treaties to which the Republic of Azerbaijan is a party.`},
+            {h:"Amendments to the Agreement", p:`No amendment to the Agreement shall be valid unless made in writing, dated, and signed by an authorized representative of each Party. All additions and amendments take legal effect once drawn up in writing and signed by the Parties' authorized representatives, and form an integral part of the Agreement.`},
+            {h:"Termination of the Agreement", p:`Where the Contractor fails to deliver any or all of the goods within the period specified in the Agreement, or fails to duly or timely perform any other obligation under the Agreement, the Customer may, by written notice to the Contractor, terminate the Agreement in whole or in part; in that case, the Customer may procure the undelivered goods elsewhere on terms it considers appropriate, and the Contractor shall be liable for any additional costs thereby incurred. Where the Contractor becomes insolvent or bankrupt, the Customer may terminate the Agreement at any time by giving notice, without compensation to the Contractor.`},
+            {h:"Final Provisions", p:`Unless the Parties agree otherwise, this Agreement takes effect on the date it is signed and sealed by the Parties' authorized representatives and remains in force until the Parties' obligations under it are fully performed. Expiry of the Agreement does not release the Parties from performing their obligations under it. A Party whose organizational-legal form, legal address, or bank details change during the term of the Agreement must notify the other Party in writing within 10 calendar days. The Agreement is drawn up in the Azerbaijani language in two original copies of equal legal force, one for each Party.`}
+          ]
+        };
+      } else if (lang === "ru") {
+        return {
+          title: "Договор купли-продажи",
+          meta: `г. ${cityStr}, ${dateStr}${noStr}`,
+          sections: [
+            {h:"Стороны", p:`${fmt(v.icrachi)} (юридический адрес: ${fmt(v.icrachi_unvan)}, ИНН: ${fmt(v.icrachi_voen)}), именуемый в дальнейшем "Исполнитель", с одной стороны, и ${fmt(v.sifarisci)} (юридический адрес: ${fmt(v.sifarisci_unvan)}, ИНН: ${fmt(v.sifarisci_voen)}), именуемый в дальнейшем "Заказчик", с другой стороны, заключили настоящий Договор купли-продажи (далее – Договор). Исполнитель и Заказчик далее по отдельности именуются "Сторона", а вместе – "Стороны".`},
+            {h:"Предмет договора", p:`Исполнитель обязуется на условиях настоящего Договора передать в собственность Заказчика товары, указанные в согласованном Сторонами Протоколе согласования цен (Приложение 1): ${fmt(v.mallarin_tesviri)}. Заказчик обязуется принять товары и оплатить их в порядке, установленном настоящим Договором. Передача товаров оформляется взаимоподписанным актом приема-передачи.`},
+            {h:"Расчеты по договору", p:`Общая стоимость товаров, продаваемых по настоящему Договору, составляет ${fmt(v.meblegh)} AZN (включая НДС). Оплата производится в азербайджанских манатах, в безналичном порядке, на основании соответствующих документов (электронные накладные-фактуры, акты, счета-фактуры), предоставленных Исполнителем, не позднее ${fmt(v.odenis_muddeti)} рабочих дней после подписания Договора. Изменение цены, количества и комплектации продаваемых товаров возможно только по взаимному согласию Сторон.`},
+            {h:"Устранение недостатков", p:`Исполнитель предоставляет гарантию качества и исправного состояния проданных товаров на срок ${fmt(v.qarantiya_muddeti)}. О неисправностях, обнаруженных в течение гарантийного срока, Заказчик направляет Исполнителю письменное уведомление; Исполнитель обязуется в течение 3 рабочих дней со дня получения уведомления, без дополнительной оплаты со стороны Заказчика, устранить неисправность или заменить бракованный товар новым. Если после ремонта неисправность не устранена или возникает повторно, Исполнитель заменяет товар новым.`},
+            {h:"Права и обязанности сторон", p:`Исполнитель обязуется передать Заказчику качественные, пригодные к эксплуатации и свободные от прав третьих лиц товары по соответствующему акту приема-передачи, а также обеспечить их надлежащей упаковкой; при обнаружении при доставке несогласованных несоответствий Исполнитель обеспечивает соразмерное уменьшение цены, ремонт или замену товара новым. Заказчик обязуется без промедления принимать товары и оказанные услуги, своевременно производить оплату и уведомлять Исполнителя в течение 3 рабочих дней о выявленных нарушениях условий Договора. Заказчик, в свою очередь, вправе при неисполнении Исполнителем своих обязательств требовать соразмерного уменьшения цены, ремонта, замены товара, а при невозможности этого – расторжения Договора с возвратом уплаченных сумм.`},
+            {h:"Субдоговоры", p:`Исполнение настоящего Договора не может быть поручено субподрядчикам без согласия каждой из Сторон. Ни Исполнитель, ни Заказчик не могут полностью или частично передать свои обязательства по настоящему Договору третьему лицу без предварительного письменного согласия другой Стороны.`},
+            {h:"Ответственность сторон", p:`Сторона, не исполнившая или ненадлежащим образом исполнившая свои обязательства по настоящему Договору, несет ответственность перед другой Стороной в порядке, установленном действующим законодательством, и возмещает причиненный ущерб в полном объеме. Уплата штрафов не освобождает Стороны от исполнения обязательств по Договору.`},
+            {h:"Форс-мажор", p:`Ни одна из Сторон не несет ответственности за неисполнение обязательств, если это явилось следствием непреодолимой силы, возникшей после подписания Договора и не зависящей от воли Стороны (действия органов власти, террористические акты, пожар, наводнение, землетрясение, оползень и иные природные и техногенные катастрофы). Другая Сторона должна быть уведомлена о таких обстоятельствах немедленно, а также в письменной форме в течение 3 рабочих дней после их прекращения; несвоевременное уведомление лишает соответствующую Сторону права ссылаться на эти обстоятельства в дальнейшем. Отсутствие платежеспособности у любой из Сторон форс-мажором не считается.`},
+            {h:"Разрешение споров", p:`Стороны разрешают споры, возникающие по Договору, по взаимному согласию. При недостижении согласия путем переговоров в течение 30 дней споры разрешаются в соответствии с законодательством Азербайджанской Республики и международными договорами, участницей которых является Азербайджанская Республика.`},
+            {h:"Изменения договора", p:`Любое изменение Договора, не оформленное в письменном виде, без указания даты и без подписи уполномоченного представителя каждой Стороны, не считается действительным. Все дополнения и изменения к Договору вступают в силу после их оформления в письменной форме и подписания уполномоченными представителями Сторон и составляют неотъемлемую часть Договора.`},
+            {h:"Расторжение договора", p:`Если Исполнитель не передал какие-либо или все товары в срок, установленный Договором, либо ненадлежащим образом или несвоевременно исполнил иное обязательство по Договору, Заказчик вправе, направив Исполнителю письменное уведомление, расторгнуть Договор полностью или частично; в этом случае Заказчик вправе приобрести непереданные товары на иных условиях по своему усмотрению, а Исполнитель несет ответственность за возникшие в связи с этим дополнительные расходы. В случае признания Исполнителя банкротом или утраты им платежеспособности Заказчик вправе в любое время расторгнуть Договор путем уведомления, без компенсации Исполнителю.`},
+            {h:"Заключительные положения", p:`Если Стороны не договорились об ином, настоящий Договор вступает в силу с даты его подписания и скрепления печатями уполномоченными представителями Сторон и действует до полного исполнения Сторонами своих обязательств по Договору. Истечение срока действия Договора не освобождает Стороны от исполнения обязательств по нему. Сторона, у которой в период действия Договора изменились организационно-правовая форма, юридический адрес или банковские реквизиты, обязана в течение 10 календарных дней письменно уведомить об этом другую Сторону. Договор составлен на азербайджанском языке в двух подлинных экземплярах, имеющих равную юридическую силу, по одному для каждой Стороны.`}
+          ]
+        };
+      } else {
+        return {
+          title: "Alqı-satqı müqaviləsi",
+          meta: `${cityStr} şəhəri, ${dateStr}${noStr}`,
+          sections: [
+            {h:"Tərəflər", p:`${fmt(v.icrachi)} (hüquqi ünvanı: ${fmt(v.icrachi_unvan)}, VÖEN: ${fmt(v.icrachi_voen)}), bundan sonra "İcraçı" adlanacaq, bir tərəfdən, və ${fmt(v.sifarisci)} (hüquqi ünvanı: ${fmt(v.sifarisci_unvan)}, VÖEN: ${fmt(v.sifarisci_voen)}), bundan sonra "Sifarişçi" adlanacaq, digər tərəfdən, aşağıdakı Alqı-satqı Müqaviləsini (bundan sonra – Müqavilə) bağladılar. İcraçı və Sifarişçi bundan sonra ayrılıqda "Tərəf", birlikdə isə "Tərəflər" adlandırılır.`},
+            {h:"Müqavilənin predmeti", p:`İcraçı bu Müqavilədə nəzərdə tutulmuş şərtlər əsasında Tərəflər arasında razılaşdırılan Qiymətlərin Razılaşdırılması Protokolunda (Əlavə 1) göstərilən aşağıdakı malları Sifarişçinin mülkiyyətinə verməyi, Sifarişçi isə malları qəbul edib bu Müqavilə ilə müəyyən edilmiş qaydada ödəməyi öhdəsinə götürür: ${fmt(v.mallarin_tesviri)}. Malların təhvili Tərəflər arasında qarşılıqlı imzalanan təhvil-təslim aktı ilə rəsmiləşdirilir.`},
+            {h:"Müqavilə üzrə ödənişlər", p:`Bu Müqavilə üzrə satılan malların ümumi məbləği ${fmt(v.meblegh)} AZN (ƏDV daxil) təşkil edir. Ödəmələr Azərbaycan manatı ilə, nağdsız qaydada, İcraçının təqdim etdiyi müvafiq sənədlər (elektron qaimə-faktura, akt, hesab-faktura) əsasında, Müqavilə imzalandıqdan sonra ${fmt(v.odenis_muddeti)} iş günündən gec olmayaraq həyata keçirilir. Satılan malların qiymətində, sayında və konfiqurasiyasında dəyişiklik yalnız Tərəflərin qarşılıqlı razılığı əsasında mümkündür.`},
+            {h:"Qüsurların aradan qaldırılması", p:`İcraçı satdığı malların keyfiyyətinə və işlək vəziyyətinə ${fmt(v.qarantiya_muddeti)} müddətinə qarantiya verir. Qarantiya müddəti ərzində aşkarlanan nasazlıqlar barədə Sifarişçi İcraçıya yazılı bildiriş göndərir; İcraçı bildirişi aldığı tarixdən 3 iş günü ərzində Sifarişçidən əlavə ödəniş tələb etmədən nasazlığı aradan qaldırır və ya qüsurlu malı yenisi ilə əvəz edir. Aparılan təmirdən sonra nasazlıq aradan qalxmazsa və ya təkrar baş verərsə, İcraçı həmin malı yenisi ilə əvəz edir.`},
+            {h:"Tərəflərin hüquq və öhdəlikləri", p:`İcraçı Sifarişçiyə keyfiyyətli, istismara yararlı və üçüncü şəxslərin hüquqlarından azad malları müvafiq təhvil-təslim aktı əsasında təhvil verməyi, malların adi şəraitdə salamatlığını təmin edən tara və qablaşdırmada təchiz etməyi öhdəsinə götürür; çatdırılma zamanı razılaşdırılmamış çatışmazlıqlar aşkar olunarsa, malların qiymətinin mütənasib azaldılmasını, təmirini və ya yenisi ilə əvəzini təmin edir. Sifarişçi malları və göstərilən xidmətləri təxirə salınmadan qəbul etməyi, ödəmələri vaxtında aparmağı və İcraçı tərəfindən şərtlərin pozulması hallarını aşkar etdikdə bu barədə 3 iş günü ərzində İcraçını məlumatlandırmağı öhdəsinə götürür. Sifarişçi, öz növbəsində, İcraçı öhdəliklərini yerinə yetirmədikdə malların mütənasib qiymət azalmasını, təmirini, əvəzlənməsini, bu mümkün olmadıqda isə ödənilmiş məbləğlərin geri qaytarılması ilə Müqavilənin ləğvini tələb etmək hüququna malikdir.`},
+            {h:"Submüqavilələr", p:`Bu Müqavilənin icrası Tərəflərin hər birinin razılığı olmadan subpodratçılara həvalə edilə bilməz. Qarşı tərəfin əvvəlcədən yazılı razılığı olmadan nə İcraçı, nə də Sifarişçi bu Müqavilə üzrə öz öhdəliklərini tam və ya qismən üçüncü şəxsə ötürə bilməz.`},
+            {h:"Tərəflərin məsuliyyəti", p:`Bu Müqavilə üzrə öz öhdəliklərini tam icra etməyən və ya lazımınca icra etməyən Tərəf digər Tərəfə vurduğu zərərə görə qüvvədə olan qanunvericiliklə müəyyən edilmiş qaydada məsuliyyət daşıyır və dəymiş zərəri tam həcmdə ödəyir. Cərimələrin ödənilməsi Tərəfləri Müqavilə üzrə öhdəliklərini yerinə yetirmək vəzifəsindən azad etmir.`},
+            {h:"Fors-major", p:`Tərəflərdən heç biri öz iradəsindən asılı olmayan, Müqavilə imzalandıqdan sonra baş verən qarşısıalınmaz qüvvə (hakimiyyət tədbirləri, terror aktları, yanğın, sel, zəlzələ, torpaq sürüşməsi və digər təbii və texnogen fəlakətlər) nəticəsində öhdəliklərini yerinə yetirə bilmədikdə məsuliyyət daşımır. Belə hallar barədə digər Tərəf dərhal, habelə hallar aradan qalxdıqdan sonra 3 iş günü ərzində yazılı formada məlumatlandırılmalıdır; vaxtında bildirilməmə müvafiq Tərəfi gələcəkdə bu hallara istinad etmək hüququndan məhrum edir. Tərəflərdən hər hansı birinin ödəmə qabiliyyətinin olmaması fors-major halı hesab edilmir.`},
+            {h:"Mübahisəli məsələlərin həlli", p:`Tərəflər Müqavilə üzrə yaranan mübahisələri qarşılıqlı razılıq əsasında həll edirlər. Danışıqlar yolu ilə 30 gün ərzində razılıq əldə olunmadıqda, mübahisələr Azərbaycan Respublikasının qanunvericiliyinə və Azərbaycan Respublikasının tərəfdar çıxdığı beynəlxalq müqavilələrə əsasən həll edilir.`},
+            {h:"Müqavilədə dəyişiklik", p:`Müqaviləyə yazılı olmayan, tarixi göstərilməyən və hər bir Tərəfin səlahiyyətli nümayəndəsi tərəfindən imzalanmayan hər hansı razılaşma etibarlı hesab edilmir. Bütün əlavə və dəyişikliklər yazılı şəkildə tərtib edildikdən və Tərəflərin səlahiyyətli nümayəndələri tərəfindən imzalandıqdan sonra hüquqi qüvvəyə minir və Müqavilənin tərkib hissəsini təşkil edir.`},
+            {h:"Müqavilənin ləğv edilməsi", p:`Sifarişçi, İcraçı Müqavilədə göstərilən müddətdə malların hər hansı birini və ya hamısını təhvil vermədikdə, yaxud Müqavilə üzrə hər hansı digər öhdəliyi lazımınca və ya vaxtında yerinə yetirmədikdə, İcraçıya yazılı bildiriş göndərməklə Müqaviləni tam və ya qismən ləğv edə bilər; bu halda Sifarişçi təhvil verilməmiş malları müvafiq hesab etdiyi şərtlərlə başqa yerdən əldə edə bilər və yaranan əlavə xərclər İcraçının məsuliyyətinə aiddir. İcraçı müflis olduqda və ya ödəmə qabiliyyətini itirdikdə, Sifarişçi istənilən vaxt yazılı bildiriş verməklə, İcraçıya kompensasiya ödəmədən Müqaviləni ləğv edə bilər.`},
+            {h:"Yekun müddəalar", p:`Tərəflər başqa cür razılaşmamışdırsa, bu Müqavilə Tərəflərin səlahiyyətli nümayəndələri tərəfindən imzalandığı və möhürləndiyi tarixdən qüvvəyə minir və öhdəliklərin tam yerinə yetirilməsi anınadək qüvvədə qalır. Müqavilənin müddətinin bitməsi Tərəfləri öhdəliklərin yerinə yetirilməsindən azad etmir. Təşkilati-hüquqi formasında, hüquqi ünvanında və ya bank rekvizitlərində dəyişiklik baş vermiş Tərəf bu barədə 10 təqvim günü ərzində digər Tərəfi yazılı şəkildə xəbərdar etməlidir. Müqavilə Azərbaycan dilində, hər bir Tərəf üçün bir nüsxə olmaqla, iki əsl nüsxədə tərtib olunub.`}
+          ]
+        };
+      }
+    }
+  },
+  icare: {
+    label: { az: "Kirayə müqaviləsi", en: "Rent Agreement", ru: "Договор аренды" },
+    hint: {
+      az: "Daşınmaz əmlakın kirayəyə verilməsi üçün istifadə olunur.",
+      en: "Used for renting real estate property.",
+      ru: "Используется для сдачи в аренду недвижимого имущества."
+    },
+    roles: {
+      az: { t1: "Kirayəyə verən", t2: "Kirayəçi" },
+      en: { t1: "Landlord", t2: "Tenant" },
+      ru: { t1: "Арендодатель", t2: "Арендатор" }
+    },
+    mapping: { t1_name: "kiraye_veren", t1_address: "unvan", t1_tax: "kiraye_veren_fin", t2_name: "kirayeci", t2_address: "unvan", t2_tax: "kirayeci_fin" },
+    fields: [
+      {id:"kiraye_veren", label:{az:"Kirayəyə verənin adı, soyadı", en:"Landlord's full name", ru:"ФИО Арендодателя"}, type:"text", placeholder:"Əli Məmmədov"},
+      {id:"kiraye_veren_fin", label:{az:"FİN", en:"PIN", ru:"ПИН"}, type:"text", placeholder:"AZE1234"},
+      {id:"kirayeci", label:{az:"Kirayəçinin adı, soyadı", en:"Tenant's full name", ru:"ФИО Арендатора"}, type:"text", placeholder:"Leyla Həsənova"},
+      {id:"kirayeci_fin", label:{az:"FİN", en:"PIN", ru:"ПИН"}, type:"text", placeholder:"AZE5678"},
+      {id:"unvan", label:{az:"Əmlakın ünvanı", en:"Property address", ru:"Адрес имущества"}, type:"text", placeholder:"Bakı ş., Nərimanov r., ..."},
+      {id:"aylik_haqqi", label:{az:"Aylıq kirayə haqqı (AZN)", en:"Monthly rent fee (AZN)", ru:"Ежемесячная арендная плата (AZN)"}, type:"text", placeholder:"600"},
+      {id:"depozit", label:{az:"Zəmanət depoziti (AZN)", en:"Security deposit (AZN)", ru:"Гарантийный депозит (AZN)"}, type:"text", placeholder:"600"},
+      {id:"kommunal", label:{az:"Kommunal xərcləri kim ödəyir", en:"Who pays utilities", ru:"Кто оплачивает коммунальные услуги"}, type:"text", placeholder:"Kirayəçi"},
+      {id:"odenis_gunu", label:{az:"Ödəniş günü (hər ayın)", en:"Payment day (of each month)", ru:"День оплаты (каждого месяца)"}, type:"text", placeholder:"5-dək"},
+      {id:"baslama_tarixi", label:{az:"Başlama tarixi", en:"Start date", ru:"Дата начала"}, type:"text", placeholder:"01.08.2026"},
+      {id:"bitme_tarixi", label:{az:"Bitmə tarixi", en:"End date", ru:"Дата окончания"}, type:"text", placeholder:"01.08.2027"},
+      {id:"sheher", label:{az:"Bağlanma şəhəri", en:"City of execution", ru:"Город заключения"}, type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:{az:"Bağlanma tarixi", en:"Date of execution", ru:"Дата заключения"}, type:"text", placeholder:"06.07.2026"}
+    ],
+    required: ["kiraye_veren","kirayeci","unvan","aylik_haqqi","baslama_tarixi","bitme_tarixi"],
+    build: (v, lang) => {
+      const cityStr = v.sheher || "…";
+      const dateStr = v.tarix || "…";
+
+      if (lang === "en") {
+        return {
+          title: "Rent Agreement",
+          meta: `${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Parties", p:`${fmt(v.kiraye_veren)} (PIN: ${fmt(v.kiraye_veren_fin)}), hereinafter referred to as the "Landlord", on the one hand, and ${fmt(v.kirayeci)} (PIN: ${fmt(v.kirayeci_fin)}), hereinafter referred to as the "Tenant", on the other hand, have entered into this agreement as follows.`},
+            {h:"Subject of the Agreement", p:`The Landlord gives the real estate property located at the following address to the Tenant for temporary use: ${fmt(v.unvan)}. The property is handed over to the Tenant by a mutually signed delivery-acceptance act.`},
+            {h:"Term of the Agreement", p:`This agreement is effective from ${fmt(v.baslama_tarixi)} until ${fmt(v.bitme_tarixi)}. The term may be extended by mutual consent of the parties.`},
+            {h:"Payment Terms", p:`The Tenant shall pay a monthly rent fee of ${fmt(v.aylik_haqqi)} AZN to the Landlord by the ${fmt(v.odenis_gunu)} day of each month. Upon signing the agreement, the Tenant pays a security deposit of ${fmt(v.depozit)} AZN, which will be returned upon termination of the agreement if the property is delivered without damage. Utility costs shall be paid by ${fmt(v.kommunal)}.`},
+            {h:"Condition of the Property", p:`The Landlord delivers the property in a usable condition. The Tenant shall give written notice to the Landlord regarding any detected defects, and the Landlord shall eliminate substantial defects within a reasonable time.`},
+            {h:"Rights and Obligations of the Parties", p:`The Tenant undertakes to use the property carefully and according to its designation. No major renovation or restoration work can be carried out on the property, and the property cannot be subleased to third parties without the prior written consent of the Landlord.`},
+            {h:"Liability", p:`If either party fails to fulfill its obligations, the other party may demand compensation for damage in accordance with the law.`},
+            {h:"Force Majeure", p:`The parties are released from liability if they cannot fulfill their obligations due to uncontrollable circumstances (natural disasters, emergencies, etc.).`},
+            {h:"Termination of the Agreement", p:`If one of the parties materially breaches its obligations, the other party may terminate the agreement by giving at least 30 days' prior written notice.`},
+            {h:"Dispute Resolution", p:`Disputes arising under this agreement shall be resolved through negotiations between the parties, and if no result is achieved, they shall be settled in court in accordance with the legislation of the Republic of Azerbaijan.`},
+            {h:"Final Provisions", p:`Amendments to the agreement can only be made with the written consent of the parties. The agreement is drawn up in two copies, one copy kept for each party.`}
+          ]
+        };
+      } else if (lang === "ru") {
+        return {
+          title: "Договор аренды",
+          meta: `г. ${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Стороны", p:`${fmt(v.kiraye_veren)} (ПИН: ${fmt(v.kiraye_veren_fin)}), именуемый в дальнейшем \"Арендодатель\", с одной стороны, и ${fmt(v.kirayeci)} (ПИН: ${fmt(v.kirayeci_fin)}), именуемый в дальнейшем \"Арендатор\", с другой стороны, заключили настоящий договор о нижеследующем.`},
+            {h:"Предмет договора", p:`Арендодатель передает Арендатору во временное пользование недвижимое имущество, расположенное по адресу: ${fmt(v.unvan)}. Имущество передается Арендатору на основании взаимоподписанного акта приема-передачи.`},
+            {h:"Срок действия договора", p:`Настоящий договор действует с ${fmt(v.baslama_tarixi)} по ${fmt(v.bitme_tarixi)}. Срок может быть продлен по взаимному согласию сторон.`},
+            {h:"Условия оплаты", p:`Арендатор выплачивает Арендодателю ежемесячную арендную плату в размере ${fmt(v.aylik_haqqi)} AZN до ${fmt(v.odenis_gunu)} числа каждого месяца. При подписании договора Арендатор вносит гарантийный депозит в размере ${fmt(v.depozit)} AZN, который возвращается по окончании срока действия договора при условии сдачи имущества без повреждений. Коммунальные расходы оплачиваются стороной: ${fmt(v.kommunal)}.`},
+            {h:"Состояние имущества", p:`Арендодатель передает имущество в пригодном для использования состоянии. Арендатор направляет Арендодателю письменное уведомление об обнаруженных неисправностях, а Арендодатель устраняет существенные недостатки в разумные сроки.`},
+            {h:"Права и обязанности сторон", p:`Арендатор обязуется бережно использовать имущество в соответствии с его назначением. Без предварительного письменного согласия Арендодателя в имуществе не могут проводиться капитальные ремонтные или реставрационные работы, а также имущество не может быть сдано в субаренду третьим лицам.`},
+            {h:"Ответственность", p:`В случае неисполнения обязательств одной из сторон другая сторона может требовать возмещения убытков в установленном законом порядке.`},
+            {h:"Форс-мажор", p:`Стороны освобождаются от ответственности, если они не могут выполнить свои обязательства из-за неконтролируемых обстоятельств (стихийные бедствия, чрезвычайные ситуации и т.д.).`},
+            {h:"Расторжение договора", p:`Если одна из сторон существенно нарушает свои обязательства, другая сторона может расторгнуть договор, направив письменное уведомление не менее чем за 30 дней.`},
+            {h:"Разрешение споров", p:`Споры по настоящему договору разрешаются путем переговоров сторон, а при недостижении результата — в судебном порядке в соответствии с законодательством Азербайджанской Республики.`},
+            {h:"Заключительные положения", p:`Изменения в договор могут быть внесены только с письменного согласия сторон. Договор составлен в двух экземплярах, по одному для каждой стороны.`}
+          ]
+        };
+      } else {
+        return {
+          title: "Kirayə müqaviləsi",
+          meta: `${cityStr} şəhəri, ${dateStr}`,
+          sections: [
+            {h:"Tərəflər", p:`${fmt(v.kiraye_veren)} (FİN: ${fmt(v.kiraye_veren_fin)}), bundan sonra "Kirayəyə verən" adlanacaq, bir tərəfdən, və ${fmt(v.kirayeci)} (FİN: ${fmt(v.kirayeci_fin)}), bundan sonra "Kirayəçi" adlanacaq, digər tərəfdən, aşağıdakı müqaviləni bağladılar.`},
+            {h:"Müqavilənin predmeti", p:`Kirayəyə verən aşağıdakı ünvanda yerləşən daşınmaz əmlakı Kirayəçiyə müvəqqəti istifadəyə verir: ${fmt(v.unvan)}. Əmlak Kirayəçiyə qarşılıqlı imzalanan təhvil-təslim aktı ilə verilir.`},
+            {h:"Müqavilənin müddəti", p:`Bu müqavilə ${fmt(v.baslama_tarixi)} tarixindən ${fmt(v.bitme_tarixi)} tarixinədək qüvvədədir. Tərəflərin qarşılıqlı razılığı ilə müddət uzadıla bilər.`},
+            {h:"Ödəniş şərtləri", p:`Kirayəçi hər ay ${fmt(v.aylik_haqqi)} AZN məbləğində kirayə haqqını hər ayın ${fmt(v.odenis_gunu)} gününədək Kirayəyə verənə ödəyir. Müqavilə imzalanarkən Kirayəçi ${fmt(v.depozit)} AZN məbləğində zəmanət depoziti ödəyir, bu depozit əmlak zədəsiz təhvil verildikdə müqavilənin bitməsi ilə geri qaytarılır. Kommunal xərcləri ${fmt(v.kommunal)} tərəfindən ödənilir.`},
+            {h:"Əmlakın vəziyyəti", p:`Kirayəyə verən əmlakı istifadəyə yararlı vəziyyətdə təhvil verir. Kirayəçi tərəfindən aşkarlanan nasazlıqlar barədə Kirayəyə verənə yazılı bildiriş verilir, Kirayəyə verən ise əsaslı nasazlıqları ağlabatan müddətdə aradan qaldırır.`},
+            {h:"Tərəflərin hüquq və vəzifələri", p:`Kirayəçi əmlakdan qayğıkeşliklə, təyinatına uyğun istifadə etməyi öhdəsinə götürür. Kirayəyə verənin əvvəlcədən yazılı razılığı olmadan əmlakda əsaslı təmir-bərpa işləri aparıla bilməz və əmlak üçünçü şəxsə təkrar kirayəyə verilə bilməz.`},
+            {h:"Məsuliyyət", p:`Tərəflərdən biri öz öhdəliklərini yerinə yetirmədikdə, digər tərəf qanunvericiliklə nəzərdə tutulmuş qaydada dəymiş zərərin əvəzinin ödənilməsini tələb edə bilər.`},
+            {h:"Fors-major", p:`Tərəflər nəzarətedilməz hallar (təbii fəlakət, fövqəladə vəziyyət və s.) səbəbindən öhdəliklərini yerinə yetirə bilmədikdə məsuliyyətdən azad olunurlar.`},
+            {h:"Müqavilənin ləğvi", p:`Tərəflərdən biri öhdəliklərini əhəmiyyətli dərəcədə pozduqda, digər tərəf ən azı 30 gün əvvəlcədən yazılı bildiriş verməklə müqaviləni ləğv edə bilər.`},
+            {h:"Mübahisələrin həlli", p:`Bu müqavilə üzrə yaranan mübahisələr tərəflər arasında danışıqlar yolu ilə, nəticə əldə olunmadıqda ise Azərbaycan Respublikasının qanunvericiliyinə uyğun məhkəmə qaydasında həll edilir.`},
+            {h:"Yekun müddəalar", p:`Müqaviləyə dəyişikliklər yalnız tərəflərin yazılı razılığı ilə edilə bilər. Müqavilə iki nüsxədə tərtib olunub, hər bir tərəf üçün bir nüsxə saxlanılır.`}
+          ]
+        };
+      }
+    }
+  },
+  xidmet: {
+    label: { az: "Xidmət müqaviləsi", en: "Service Agreement", ru: "Договор оказания услуг" },
+    hint: {
+      az: "Freelancer, ifaçı və ya podratçı ilə iş üçün istifadə olunur.",
+      en: "Used for work with freelancers, performers, or contractors.",
+      ru: "Используется для работы с фрилансерами, исполнителями или подрядчиками."
+    },
+    roles: {
+      az: { t1: "Sifarişçi", t2: "İcraçı" },
+      en: { t1: "Customer", t2: "Executor" },
+      ru: { t1: "Заказчик", t2: "Исполнитель" }
+    },
+    mapping: { t1_name: "sifarisci", t1_address: "sheher", t1_tax: "", t2_name: "icrachi", t2_address: "sheher", t2_tax: "" },
+    fields: [
+      {id:"sifarisci", label:{az:"Sifarişçi (ad / şirket)", en:"Customer (name / company)", ru:"Заказчик (имя / компания)"}, type:"text", placeholder:"XYZ MMC"},
+      {id:"icrachi", label:{az:"İcraçı (ad, soyad)", en:"Executor (full name)", ru:"Исполнитель (ФИО)"}, type:"text", placeholder:"Rəşad Quliyev"},
+      {id:"xidmet_tesviri", label:{az:"Xidmətin təsviri", en:"Description of service", ru:"Описание услуги"}, type:"textarea", placeholder:"Veb sayt hazırlanması"},
+      {id:"qiymet", label:{az:"Ümumi məbləğ (AZN)", en:"Total amount (AZN)", ru:"Общая сумма (AZN)"}, type:"text", placeholder:"1200"},
+      {id:"muddet", label:{az:"İcra müddəti", en:"Execution period", ru:"Срок исполнения"}, type:"text", placeholder:"15.07.2026-dək"},
+      {id:"odenish_sherti", label:{az:"Ödəniş şərti", en:"Payment condition", ru:"Условие оплаты"}, type:"text", placeholder:"50% avans, 50% təhvildən sonra"},
+      {id:"sheher", label:{az:"Bağlanma şəhəri", en:"City of execution", ru:"Город заключения"}, type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:{az:"Bağlanma tarixi", en:"Date of execution", ru:"Дата заключения"}, type:"text", placeholder:"06.07.2026"}
+    ],
+    required: ["sifarisci","icrachi","xidmet_tesviri","qiymet","muddet"],
+    build: (v, lang) => {
+      const cityStr = v.sheher || "…";
+      const dateStr = v.tarix || "…";
+
+      if (lang === "en") {
+        return {
+          title: "Service Agreement",
+          meta: `${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Parties", p:`${fmt(v.sifarisci)}, hereinafter referred to as the "Customer", on the one hand, and ${fmt(v.icrachi)}, hereinafter referred to as the "Executor", on the other hand, have entered into this agreement as follows.`},
+            {h:"Subject of the Agreement", p:`The Executor undertakes to provide the following service for the Customer: ${fmt(v.xidmet_tesviri)}.`},
+            {h:"Execution Period", p:`The Executor undertakes to fully perform the service by ${fmt(v.muddet)}.`},
+            {h:"Price and Payment", p:`The total value of the service is ${fmt(v.qiymet)} AZN. Method of payment: ${fmt(v.odenish_sherti)}.`},
+            {h:"Rights and Obligations of the Parties", p:`The Executor undertakes to perform the service with quality and within the agreed period, and the Customer undertakes to provide the necessary information and resources on time.`},
+            {h:"Liability", p:`In case of breach of obligations, the guilty party shall compensate the other party for the real damage caused.`},
+            {h:"Force Majeure", p:`The parties are released from liability if they cannot fulfill their obligations due to uncontrollable circumstances.`},
+            {h:"Dispute Resolution", p:`Disputes shall be resolved through negotiations, and if there is no result, they shall be settled in court in accordance with the legislation.`},
+            {h:"Other Terms", p:`The agreement is drawn up in two copies, one copy kept for each party. Amendments can only be made by written consent.`}
+          ]
+        };
+      } else if (lang === "ru") {
+        return {
+          title: "Договор оказания услуг",
+          meta: `г. ${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Стороны", p:`${fmt(v.sifarisci)}, именуемый в дальнейшем \"Заказчик\", с одной стороны, и ${fmt(v.icrachi)}, именуемый в дальнейшем \"Исполнитель\", с другой стороны, заключили настоящий договор о нижеследующем.`},
+            {h:"Предмет договора", p:`Исполнитель обязуется оказать Заказчику следующую услугу: ${fmt(v.xidmet_tesviri)}.`},
+            {h:"Срок исполнения", p:`Исполнитель обязуется полностью выполнить услугу в срок до ${fmt(v.muddet)}.`},
+            {h:"Цена и оплата", p:`Общая стоимость услуги составляет ${fmt(v.qiymet)} AZN. Порядок оплаты: ${fmt(v.odenish_sherti)}.`},
+            {h:"Права и обязанности сторон", p:`Исполнитель обязуется оказать услугу качественно и в согласованный срок, а Заказчик обязуется своевременно предоставить необходимую информацию и ресурсы.`},
+            {h:"Ответственность", p:`В случае нарушения обязательств виновная сторона возмещает другой стороне причиненный реальный ущерб.`},
+            {h:"Форс-мажор", p:`Стороны освобождаются от ответственности, если они не могут выполнить свои обязательства из-за неконтролируемых обстоятельств.`},
+            {h:"Разрешение споров", p:`Споры разрешаются путем переговоров, а при отсутствии результата — в судебном порядке в соответствии с законодательством.`},
+            {h:"Другие условия", p:`Договор составлен в двух экземплярах, по одному для каждой стороны. Изменения вносятся только по письменному согласию.`}
+          ]
+        };
+      } else {
+        return {
+          title: "Xidmət göstərilməsi haqqında müqavilə",
+          meta: `${cityStr} şəhəri, ${dateStr}`,
+          sections: [
+            {h:"Tərəflər", p:`${fmt(v.sifarisci)}, bundan sonra "Sifarişçi" adlanacaq, bir tərəfdən, və ${fmt(v.icrachi)}, bundan sonra "İcraçı" adlanacaq, digər tərəfdən, aşağıdakı müqaviləni bağladılar.`},
+            {h:"Müqavilənin predmeti", p:`İcraçı Sifarişçi üçün aşağıdakı xidməti göstərməyi öhdəsinə götürür: ${fmt(v.xidmet_tesviri)}.`},
+            {h:"İcra müddəti", p:`İcraçı xidməti ${fmt(v.muddet)} tarixinədək tam yerinə yetirməyi öhdəsinə götürür.`},
+            {h:"Qiymət və ödəniş", p:`Xidmətin ümumi dəyəri ${fmt(v.qiymet)} AZN təşkil edir. Ödəniş qaydası: ${fmt(v.odenish_sherti)}.`},
+            {h:"Tərəflərin hüquq və vəzifələri", p:`İcraçı xidməti keyfiyyətlə və razılaşdırılmış müddətdə yerinə yetirməyi, Sifarişçi isə lazımi məlumat və resursları vaxtında təqdim etməyi öhdəsinə götürür.`},
+            {h:"Məsuliyyət", p:`Öhdəliklərin pozulması halında təqsirkar tərəf digər tərəfə dəymiş real zərərin əvəzini ödəyir.`},
+            {h:"Fors-major", p:`Tərəflər nəzarətedilməz hallar səbəbindən öhdəliklərini yerinə yetirə bilmədikdə məsuliyyətdən azad olunurlar.`},
+            {h:"Mübahisələrin həlli", p:`Mübahisələr danışıqlar yolu ilə, nəticə olmadıqda isə qanunvericiliyə uyğun məhkəmə qaydasında həll olunur.`},
+            {h:"Digər şərtlər", p:`Müqavilə iki nüsxədə tərtib olunub, hər tərəf üçün bir nüsxə saxlanılır. Dəyişikliklər yalnız yazılı razılıqla edilir.`}
+          ]
+        };
+      }
+    }
+  },
+  nda: {
+    label: { az: "NDA (Məxfilik) müqaviləsi", en: "NDA (Confidentiality Agreement)", ru: "Договор NDA (о конфиденциальности)" },
+    hint: {
+      az: "Tərəflər arasında mübadilə olunan kommersiya, texniki və ya digər məxfi məlumatların qorunması üçün istifadə olunur.",
+      en: "Used to protect commercial, technical or other confidential information exchanged between the parties.",
+      ru: "Используется для защиты коммерческой, технической или иной конфиденциальной информации, которой обмениваются стороны."
+    },
+    roles: {
+      az: { t1: "1-ci Tərəf", t2: "2-ci Tərəf" },
+      en: { t1: "Party 1", t2: "Party 2" },
+      ru: { t1: "Сторона 1", t2: "Сторона 2" }
+    },
+    mapping: { t1_name: "terefa", t1_address: "terefa_unvan", t1_tax: "terefa_voen", t2_name: "terefb", t2_address: "terefb_unvan", t2_tax: "terefb_voen" },
+    fields: [
+      {id:"terefa", label:{az:"1-ci Tərəfin adı (şirkət / şəxs)", en:"Party 1's name (company / individual)", ru:"Наименование Стороны 1 (компания / лицо)"}, type:"text", placeholder:"\"Alfa Solutions\" MMC"},
+      {id:"terefa_unvan", label:{az:"1-ci Tərəfin hüquqi ünvanı", en:"Party 1's legal address", ru:"Юридический адрес Стороны 1"}, type:"text", placeholder:"Bakı ş., Nərimanov r., ..."},
+      {id:"terefa_voen", label:{az:"1-ci Tərəfin VÖEN-i", en:"Party 1's TIN", ru:"ИНН Стороны 1"}, type:"text", placeholder:"1122334455"},
+      {id:"terefb", label:{az:"2-ci Tərəfin adı (şirkət / şəxs)", en:"Party 2's name (company / individual)", ru:"Наименование Стороны 2 (компания / лицо)"}, type:"text", placeholder:"Elvin Sadıqov"},
+      {id:"terefb_unvan", label:{az:"2-ci Tərəfin ünvanı", en:"Party 2's address", ru:"Адрес Стороны 2"}, type:"text", placeholder:"Bakı ş., Xətai r., ..."},
+      {id:"terefb_voen", label:{az:"2-ci Tərəfin VÖEN / FİN-i", en:"Party 2's TIN / PIN", ru:"ИНН / ПИН Стороны 2"}, type:"text", placeholder:"AZE1234567"},
+      {id:"mexfi_tesviri", label:{az:"Məxfi məlumatın təsviri", en:"Description of confidential information", ru:"Описание конфиденциальной информации"}, type:"textarea", placeholder:"Maliyyə göstəriciləri, müştəri bazası, texniki sənədləşmə və s."},
+      {id:"meqsed", label:{az:"Məlumatın açıqlanma məqsədi", en:"Purpose of disclosure", ru:"Цель раскрытия информации"}, type:"text", placeholder:"Potensial əməkdaşlığın qiymətləndirilməsi"},
+      {id:"muddet", label:{az:"Məxfilik müddəti", en:"Confidentiality term", ru:"Срок конфиденциальности"}, type:"text", placeholder:"3 il"},
+      {id:"sheher", label:{az:"Bağlanma şəhəri", en:"City of execution", ru:"Город заключения"}, type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:{az:"Bağlanma tarixi", en:"Date of execution", ru:"Дата заключения"}, type:"text", placeholder:"06.07.2026"}
+    ],
+    required: ["terefa","terefb","mexfi_tesviri","meqsed","muddet"],
+    build: (v, lang) => {
+      const cityStr = v.sheher || "…";
+      const dateStr = v.tarix || "…";
+
+      if (lang === "en") {
+        return {
+          title: "Non-Disclosure Agreement (NDA)",
+          meta: `${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Parties", p:`${fmt(v.terefa)} (legal address: ${fmt(v.terefa_unvan)}, TIN: ${fmt(v.terefa_voen)}), hereinafter referred to as "Party 1", on the one hand, and ${fmt(v.terefb)} (address: ${fmt(v.terefb_unvan)}, TIN/PIN: ${fmt(v.terefb_voen)}), hereinafter referred to as "Party 2", on the other hand, have entered into this Non-Disclosure Agreement as follows.`},
+            {h:"Subject of the Agreement", p:`This agreement is concluded for the purpose of protecting confidential information to be exchanged between the parties within the framework of their cooperation. Purpose of disclosure: ${fmt(v.meqsed)}.`},
+            {h:"Definition of Confidential Information", p:`For the purposes of this agreement, "confidential information" means the following information transferred by one party to the other in oral, written, electronic or any other form, which is not available from public sources: ${fmt(v.mexfi_tesviri)}.`},
+            {h:"Exceptions", p:`Information shall not be deemed confidential if: it was already publicly known at the time of disclosure; it was lawfully obtained by the receiving party from a third party without a confidentiality obligation; it was independently developed by the receiving party without reference to the disclosing party's information; or its disclosure is required by law or by a decision of a competent state authority.`},
+            {h:"Obligations of the Receiving Party", p:`The party receiving confidential information undertakes to: (a) use it solely for the purpose specified in this agreement; (b) not disclose or transfer it to third parties; (c) apply at least the same degree of care to protect it as it applies to its own confidential information of a similar nature.`},
+            {h:"Term of Confidentiality", p:`The confidentiality obligations under this agreement remain in force for ${fmt(v.muddet)} from the date of signing this agreement. Termination of this agreement does not terminate the confidentiality obligations.`},
+            {h:"Return and Destruction of Information", p:`At the request of either party, the other party undertakes to return or destroy all confidential information transferred to it, together with all copies thereof, within 10 working days.`},
+            {h:"Intellectual Property", p:`All rights to the confidential information transferred under this agreement remain with the party that disclosed it. This agreement does not grant either party any license or right to the other party's intellectual property.`},
+            {h:"Liability of the Parties", p:`A party that breaches the obligations established by this agreement shall fully compensate the other party for the real damage caused, in accordance with the current legislation.`},
+            {h:"Force Majeure", p:`The parties are released from liability if they fail to perform their obligations due to irresistible circumstances beyond their control, provided they immediately notify the other party.`},
+            {h:"Dispute Resolution", p:`Disputes shall be resolved through negotiations between the parties, and if not resolved within 30 days, they shall be settled in court in accordance with the legislation of the Republic of Azerbaijan.`},
+            {h:"Final Provisions", p:`Amendments and supplements to this agreement may only be made in writing and signed by authorized representatives of the parties. The agreement is drawn up in two original copies, one for each party.`}
+          ]
+        };
+      } else if (lang === "ru") {
+        return {
+          title: "Договор о неразглашении (NDA)",
+          meta: `г. ${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Стороны", p:`${fmt(v.terefa)} (юридический адрес: ${fmt(v.terefa_unvan)}, ИНН: ${fmt(v.terefa_voen)}), именуемый в дальнейшем "Сторона 1", с одной стороны, и ${fmt(v.terefb)} (адрес: ${fmt(v.terefb_unvan)}, ИНН/ПИН: ${fmt(v.terefb_voen)}), именуемый в дальнейшем "Сторона 2", с другой стороны, заключили настоящий договор о неразглашении о нижеследующем.`},
+            {h:"Предмет договора", p:`Настоящий договор заключается с целью защиты конфиденциальной информации, которой будут обмениваться стороны в рамках сотрудничества. Цель раскрытия информации: ${fmt(v.meqsed)}.`},
+            {h:"Понятие конфиденциальной информации", p:`Для целей настоящего договора под конфиденциальной информацией понимается следующая информация, передаваемая одной стороной другой в устной, письменной, электронной или иной форме и не являющаяся общедоступной: ${fmt(v.mexfi_tesviri)}.`},
+            {h:"Исключения", p:`Информация не считается конфиденциальной, если: она уже была общеизвестна на момент раскрытия; она была правомерно получена принимающей стороной от третьего лица без обязательства о конфиденциальности; она была самостоятельно разработана принимающей стороной без использования информации раскрывающей стороны; либо её раскрытие требуется законодательством или решением компетентного государственного органа.`},
+            {h:"Обязательства принимающей стороны", p:`Сторона, получающая конфиденциальную информацию, обязуется: а) использовать её исключительно в цели, указанной в настоящем договоре; б) не разглашать и не передавать её третьим лицам; в) принимать для её защиты не меньшие меры предосторожности, чем те, что применяются к собственной конфиденциальной информации аналогичного характера.`},
+            {h:"Срок конфиденциальности", p:`Обязательства о конфиденциальности по настоящему договору действуют в течение ${fmt(v.muddet)} с даты подписания настоящего договора. Прекращение действия настоящего договора не влечёт прекращения обязательств о конфиденциальности.`},
+            {h:"Возврат и уничтожение информации", p:`По требованию любой из сторон другая сторона обязуется вернуть или уничтожить всю переданную ей конфиденциальную информацию вместе со всеми её копиями в течение 10 рабочих дней.`},
+            {h:"Интеллектуальная собственность", p:`Все права на конфиденциальную информацию, переданную по настоящему договору, остаются за раскрывшей её стороной. Настоящий договор не предоставляет ни одной из сторон какой-либо лицензии или права на интеллектуальную собственность другой стороны.`},
+            {h:"Ответственность сторон", p:`Сторона, нарушившая обязательства, установленные настоящим договором, полностью возмещает другой стороне причинённый реальный ущерб в порядке, установленном действующим законодательством.`},
+            {h:"Форс-мажор", p:`Стороны освобождаются от ответственности за неисполнение обязательств вследствие непреодолимых обстоятельств, не зависящих от их воли, при условии немедленного уведомления другой стороны.`},
+            {h:"Разрешение споров", p:`Споры разрешаются путем переговоров между сторонами, а при недостижении согласия в течение 30 дней — в судебном порядке в соответствии с законодательством Азербайджанской Республики.`},
+            {h:"Заключительные положения", p:`Изменения и дополнения к настоящему договору могут быть внесены только в письменной форме и подписаны уполномоченными представителями сторон. Договор составлен в двух подлинных экземплярах, по одному для каждой стороны.`}
+          ]
+        };
+      } else {
+        return {
+          title: "Məxfilik (NDA) müqaviləsi",
+          meta: `${cityStr} şəhəri, ${dateStr}`,
+          sections: [
+            {h:"Tərəflər", p:`${fmt(v.terefa)} (hüquqi ünvanı: ${fmt(v.terefa_unvan)}, VÖEN: ${fmt(v.terefa_voen)}), bundan sonra "1-ci Tərəf" adlanacaq, bir tərəfdən, və ${fmt(v.terefb)} (ünvanı: ${fmt(v.terefb_unvan)}, VÖEN/FİN: ${fmt(v.terefb_voen)}), bundan sonra "2-ci Tərəf" adlanacaq, digər tərəfdən, aşağıdakı məxfilik saxlama müqaviləsini bağladılar.`},
+            {h:"Müqavilənin predmeti", p:`Bu müqavilə tərəflər arasında əməkdaşlıq çərçivəsində mübadilə olunacaq məxfi məlumatların qorunması məqsədilə bağlanılır. Məlumatın açıqlanma məqsədi: ${fmt(v.meqsed)}.`},
+            {h:"Məxfi məlumatın anlayışı", p:`Bu müqavilə çərçivəsində məxfi məlumat dedikdə tərəflərdən birinin digərinə şifahi, yazılı, elektron və ya hər hansı digər formada ötürdüyü, açıq mənbələrdə mövcud olmayan aşağıdakı məlumatlar nəzərdə tutulur: ${fmt(v.mexfi_tesviri)}.`},
+            {h:"İstisnalar", p:`Aşağıdakı hallarda məlumat məxfi hesab edilmir: məlumat açıqlanma anında artıq ictimaiyyə üçün məlum idisə; məlumat qəbul edən tərəfə üçüncü şəxs tərəfindən, məxfilik öhdəliyi olmadan, qanuni yolla ötürülübsə; məlumat qəbul edən tərəf tərəfindən ifşa edən tərəfin məlumatından istifadə olunmadan müstəqil işlənib hazırlanıbsa; və ya məlumatın açıqlanması qanunvericiliyin tələbi və ya səlahiyyətli dövlət orqanının qərarı əsasında həyata keçirilirsə.`},
+            {h:"Tərəflərin öhdəlikləri", p:`Məxfi məlumatı əldə edən tərəf: a) məlumatı yalnız bu müqavilədə göstərilən məqsəd üçün istifadə etməyi; b) məlumatı üçüncü şəxslərə ötürməməyi və ya açıqlamamağı; c) məlumatın qorunması üçün özünün analoji xarakterli məlumatlarına tətbiq etdiyi qədər ehtiyat tədbirləri görməyi öhdəsinə götürür.`},
+            {h:"Məxfiliyin müddəti", p:`Bu müqavilə üzrə məxfilik öhdəlikləri müqavilənin imzalandığı tarixdən etibarən ${fmt(v.muddet)} müddətində qüvvədə qalır. Müqavilənin xitamı məxfilik öhdəliklərinin xitamına səbəb olmur.`},
+            {h:"Məlumatın qaytarılması və məhv edilməsi", p:`Tərəflərdən birinin tələbi əsasında, digər tərəf ona ötürülmüş bütün məxfi məlumatları və onların surətlərini 10 iş günü ərzində qaytarmağı və ya məhv etməyi öhdəsinə götürür.`},
+            {h:"Əqli mülkiyyət", p:`Bu müqavilə çərçivəsində ötürülən məxfi məlumat üzərində bütün hüquqlar onu ötürən tərəfə məxsus olaraq qalır. Bu müqavilə heç bir tərəfə digər tərəfin əqli mülkiyyət hüquqlarına dair lisenziya və ya hüquq vermir.`},
+            {h:"Tərəflərin məsuliyyəti", p:`Bu müqavilə ilə müəyyən edilmiş öhdəlikləri pozan tərəf digər tərəfə dəymiş real zərəri qüvvədə olan qanunvericiliklə müəyyən edilmiş qaydada tam həcmdə ödəyir.`},
+            {h:"Fors-major", p:`Tərəflər öz iradələrindən asılı olmayan qarşısıalınmaz hallar nəticəsində öhdəliklərini yerinə yetirə bilmədikdə məsuliyyətdən azad olunurlar, bu barədə digər tərəfi dərhal məlumatlandırmaq şərti ilə.`},
+            {h:"Mübahisələrin həlli", p:`Mübahisələr tərəflər arasında danışıqlar yolu ilə, 30 gün ərzində həll olunmadıqda isə Azərbaycan Respublikasının qanunvericiliyinə uyğun məhkəmə qaydasında həll edilir.`},
+            {h:"Yekun müddəalar", p:`Müqaviləyə dəyişiklik və əlavələr yalnız yazılı formada və tərəflərin səlahiyyətli nümayəndələrinin imzası ilə edilə bilər. Müqavilə hər bir tərəf üçün bir nüsxə olmaqla, iki əsl nüsxədə tərtib olunub.`}
+          ]
+        };
+      }
+    }
+  },
+  diger: {
+    label: { az: "Digər (Fərdi) müqavilə", en: "Other (Custom) Agreement", ru: "Другой (индивидуальный) договор" },
+    hint: {
+      az: "Yuxarıdakı kateqoriyalara uyğun gəlməyən müqavilələr üçün nəzərdə tutulub. Tərəfləri və mövzunu qeyd edin, sonra aşağıda \"+ Yeni bənd əlavə et\" düyməsi ilə istədiyiniz bəndləri özünüz əlavə edərək tam müqavilə hazırlayın.",
+      en: "For agreements that don't fit the categories above. Fill in the parties and subject, then use the \"+ Add New Clause\" button below to freely add the clauses you need and build a complete agreement.",
+      ru: "Для договоров, не подходящих под указанные выше категории. Укажите стороны и предмет, затем с помощью кнопки \"+ Добавить новый пункт\" ниже свободно добавьте нужные пункты и сформируйте полный договор."
+    },
+    roles: {
+      az: { t1: "1-ci Tərəf", t2: "2-ci Tərəf" },
+      en: { t1: "Party 1", t2: "Party 2" },
+      ru: { t1: "Сторона 1", t2: "Сторона 2" }
+    },
+    mapping: { t1_name: "teref1", t1_address: "teref1_unvan", t1_tax: "teref1_voen", t2_name: "teref2", t2_address: "teref2_unvan", t2_tax: "teref2_voen" },
+    fields: [
+      {id:"basliq", label:{az:"Müqavilənin adı / başlığı", en:"Agreement name / title", ru:"Название / заголовок договора"}, type:"text", placeholder:"Əməkdaşlıq müqaviləsi"},
+      {id:"teref1", label:{az:"1-ci Tərəfin adı (şirkət / şəxs)", en:"Party 1's name (company / individual)", ru:"Наименование Стороны 1 (компания / лицо)"}, type:"text", placeholder:"\"Nurlan Tech\" MMC"},
+      {id:"teref1_unvan", label:{az:"1-ci Tərəfin ünvanı", en:"Party 1's address", ru:"Адрес Стороны 1"}, type:"text", placeholder:"Bakı ş., Yasamal r., ..."},
+      {id:"teref1_voen", label:{az:"1-ci Tərəfin VÖEN / FİN-i", en:"Party 1's TIN / PIN", ru:"ИНН / ПИН Стороны 1"}, type:"text", placeholder:"1234567890"},
+      {id:"teref2", label:{az:"2-ci Tərəfin adı (şirkət / şəxs)", en:"Party 2's name (company / individual)", ru:"Наименование Стороны 2 (компания / лицо)"}, type:"text", placeholder:"\"Progress Group\" MMC"},
+      {id:"teref2_unvan", label:{az:"2-ci Tərəfin ünvanı", en:"Party 2's address", ru:"Адрес Стороны 2"}, type:"text", placeholder:"Bakı ş., Nəsimi r., ..."},
+      {id:"teref2_voen", label:{az:"2-ci Tərəfin VÖEN / FİN-i", en:"Party 2's TIN / PIN", ru:"ИНН / ПИН Стороны 2"}, type:"text", placeholder:"0987654321"},
+      {id:"movzu", label:{az:"Müqavilənin qısa mövzusu", en:"Brief subject of the agreement", ru:"Краткий предмет договора"}, type:"textarea", placeholder:"Müqavilənin nədən ibarət olduğunu qısaca izah edin"},
+      {id:"sheher", label:{az:"Bağlanma şəhəri", en:"City of execution", ru:"Город заключения"}, type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:{az:"Bağlanma tarixi", en:"Date of execution", ru:"Дата заключения"}, type:"text", placeholder:"06.07.2026"}
+    ],
+    required: ["teref1","teref2","movzu"],
+    build: (v, lang) => {
+      const cityStr = v.sheher || "…";
+      const dateStr = v.tarix || "…";
+      const hasBasliq = v.basliq && v.basliq.trim();
+
+      if (lang === "en") {
+        return {
+          title: hasBasliq ? v.basliq : "Custom Agreement",
+          meta: `${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Parties", p:`${fmt(v.teref1)} (address: ${fmt(v.teref1_unvan)}, TIN/PIN: ${fmt(v.teref1_voen)}), hereinafter referred to as "Party 1", on the one hand, and ${fmt(v.teref2)} (address: ${fmt(v.teref2_unvan)}, TIN/PIN: ${fmt(v.teref2_voen)}), hereinafter referred to as "Party 2", on the other hand, have entered into this agreement as follows.`},
+            {h:"Subject of the Agreement", p:`${fmt(v.movzu)}`}
+          ]
+        };
+      } else if (lang === "ru") {
+        return {
+          title: hasBasliq ? v.basliq : "Индивидуальный договор",
+          meta: `г. ${cityStr}, ${dateStr}`,
+          sections: [
+            {h:"Стороны", p:`${fmt(v.teref1)} (адрес: ${fmt(v.teref1_unvan)}, ИНН/ПИН: ${fmt(v.teref1_voen)}), именуемый в дальнейшем "Сторона 1", с одной стороны, и ${fmt(v.teref2)} (адрес: ${fmt(v.teref2_unvan)}, ИНН/ПИН: ${fmt(v.teref2_voen)}), именуемый в дальнейшем "Сторона 2", с другой стороны, заключили настоящий договор о нижеследующем.`},
+            {h:"Предмет договора", p:`${fmt(v.movzu)}`}
+          ]
+        };
+      } else {
+        return {
+          title: hasBasliq ? v.basliq : "Fərdi Müqavilə",
+          meta: `${cityStr} şəhəri, ${dateStr}`,
+          sections: [
+            {h:"Tərəflər", p:`${fmt(v.teref1)} (ünvanı: ${fmt(v.teref1_unvan)}, VÖEN/FİN: ${fmt(v.teref1_voen)}), bundan sonra "1-ci Tərəf" adlanacaq, bir tərəfdən, və ${fmt(v.teref2)} (ünvanı: ${fmt(v.teref2_unvan)}, VÖEN/FİN: ${fmt(v.teref2_voen)}), bundan sonra "2-ci Tərəf" adlanacaq, digər tərəfdən, aşağıdakı müqaviləni bağladılar.`},
+            {h:"Müqavilənin predmeti", p:`${fmt(v.movzu)}`}
+          ]
+        };
+      }
+    }
+  }
+};
+
+function fmt(val){
+  if(!val || !val.trim()) return `<span class="placeholder-empty">${uiLabels[currentLang].empty}</span>`;
+  return val;
+}
+
+let currentTemplate = "alqisatqi";
+let values = {};
+let sectionIncluded = {};
+let customClauses = {};
+
+function ensureClauseState(key, doc){
+  if(!sectionIncluded[key]) sectionIncluded[key] = doc.sections.map(() => true);
+  if(!customClauses[key]) customClauses[key] = [];
+}
+
+function getMergedSections(){
+  const t = templates[currentTemplate];
+  const doc = t.build(values, currentLang);
+  ensureClauseState(currentTemplate, doc);
+  const included = sectionIncluded[currentTemplate];
+  const fixed = doc.sections.filter((s, i) => included[i]);
+  const customs = customClauses[currentTemplate].filter(c => c.h.trim() || c.p.trim());
+  return { title: doc.title, meta: doc.meta, all: [...fixed, ...customs] };
+}
+
+function initValues(){
+  values = {};
+  templates[currentTemplate].fields.forEach(f => values[f.id] = "");
+}
+initValues();
+
+function changeLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
+  });
+  
+  // UI etiketlərini brendə uyğun yenilə
+  document.getElementById("mainTitle").textContent = uiLabels[lang].title;
+  document.getElementById("mainSub").textContent = uiLabels[lang].sub;
+  document.getElementById("sealText").innerHTML = uiLabels[lang].seal;
+  document.getElementById("footerNote").textContent = uiLabels[lang].footer;
+  document.getElementById("downloadDocxBtn").textContent = uiLabels[lang].docx;
+  document.getElementById("downloadPdfBtn").textContent = uiLabels[lang].pdf;
+  document.getElementById("printBtn").textContent = uiLabels[lang].print;
+
+  renderAll();
+}
+
+function renderTabs(){
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  Object.keys(templates).forEach(key => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (key === currentTemplate ? " active" : "");
+    btn.textContent = templates[key].label[currentLang];
+    btn.onclick = () => { currentTemplate = key; initValues(); renderAll(); };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function renderForm(){
+  const t = templates[currentTemplate];
+  document.getElementById("formTitle").textContent = t.label[currentLang];
+  document.getElementById("formHint").textContent = t.hint[currentLang];
+  const container = document.getElementById("formFields");
+  container.innerHTML = "";
+  t.fields.forEach(f => {
+    const div = document.createElement("div");
+    div.className = "field";
+    const label = document.createElement("label");
+    label.textContent = f.label[currentLang];
+    div.appendChild(label);
+    let input;
+    if(f.type === "textarea"){
+      input = document.createElement("textarea");
+    } else {
+      input = document.createElement("input");
+      input.type = "text";
+    }
+    input.placeholder = f.placeholder || "";
+    input.value = values[f.id] || "";
+    input.oninput = (e) => { values[f.id] = e.target.value; renderDoc(); };
+    div.appendChild(input);
+    container.appendChild(div);
+  });
+
+  const doc = t.build(values, currentLang);
+  ensureClauseState(currentTemplate, doc);
+  const included = sectionIncluded[currentTemplate];
+
+  const clausesBlock = document.createElement("div");
+  clausesBlock.className = "clauses-block";
+  const heading = document.createElement("h4");
+  heading.textContent = uiLabels[currentLang].clauses;
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent = uiLabels[currentLang].clausesHint;
+  clausesBlock.appendChild(heading);
+  clausesBlock.appendChild(hint);
+
+  doc.sections.forEach((s, i) => {
+    const row = document.createElement("div");
+    row.className = "clause-row";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = "clause_" + i;
+    cb.checked = included[i];
+    cb.onchange = () => { included[i] = cb.checked; renderDoc(); };
+    const lbl = document.createElement("label");
+    lbl.htmlFor = "clause_" + i;
+    lbl.textContent = s.h;
+    row.appendChild(cb);
+    row.appendChild(lbl);
+    clausesBlock.appendChild(row);
+  });
+
+  const customs = customClauses[currentTemplate];
+  customs.forEach((c, i) => {
+    const box = document.createElement("div");
+    box.className = "custom-clause";
+    const del = document.createElement("button");
+    del.className = "remove-clause-btn";
+    del.textContent = "×";
+    del.title = uiLabels[currentLang].removeClause;
+    del.onclick = () => { customs.splice(i, 1); renderForm(); renderDoc(); };
+    const titleInput = document.createElement("input");
+    titleInput.placeholder = uiLabels[currentLang].customPlaceholderTitle;
+    titleInput.value = c.h;
+    titleInput.oninput = (e) => { c.h = e.target.value; renderDoc(); };
+    const textArea = document.createElement("textarea");
+    textArea.placeholder = uiLabels[currentLang].customPlaceholderText;
+    textArea.value = c.p;
+    textArea.oninput = (e) => { c.p = e.target.value; renderDoc(); };
+    box.appendChild(del);
+    box.appendChild(titleInput);
+    box.appendChild(textArea);
+    clausesBlock.appendChild(box);
+  });
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "add-clause-btn";
+  addBtn.textContent = uiLabels[currentLang].addClause;
+  addBtn.onclick = () => { customs.push({h:"", p:""}); renderForm(); renderDoc(); };
+  clausesBlock.appendChild(addBtn);
+
+  container.appendChild(clausesBlock);
+}
+
+function renderDoc(){
+  const t = templates[currentTemplate];
+  const merged = getMergedSections();
+  const ui = uiLabels[currentLang];
+  
+  const m = t.mapping;
+  const t1_name = values[m.t1_name] || `[${ui.empty}]`;
+  const t1_addr = values[m.t1_address] || `[${ui.empty}]`;
+  const t1_tax = m.t1_tax ? (values[m.t1_tax] || `[${ui.empty}]`) : "—";
+  
+  const t2_name = values[m.t2_name] || `[${ui.empty}]`;
+  const t2_addr = values[m.t2_address] || `[${ui.empty}]`;
+  const t2_tax = m.t2_tax ? (values[m.t2_tax] || `[${ui.empty}]`) : "—";
+
+  document.getElementById("docContent").innerHTML = `
+    <h1 contenteditable="true">${merged.title}</h1>
+    <div class="doc-meta" contenteditable="true">${merged.meta}</div>
+    ${merged.all.map((s, i) => `
+      <h2 contenteditable="true">${i+1}. ${s.h || ""}</h2>
+      <p contenteditable="true">${s.p}</p>
+    `).join("")}
+    
+    <h2 contenteditable="true">${merged.all.length + 1}. ${ui.reqTitle}</h2>
+    <table class="requisites-table">
+      <thead>
+        <tr>
+          <th>${t.roles[currentLang].t1}</th>
+          <th>${t.roles[currentLang].t2}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <p><strong>${ui.reqName}:</strong> <span contenteditable="true">${t1_name}</span></p>
+            <p><strong>${ui.reqAddr}:</strong> <span contenteditable="true">${t1_addr}</span></p>
+            <p><strong>${ui.reqTax}:</strong> <span contenteditable="true">${t1_tax}</span></p>
+            <p class="sig-space">${ui.reqSig}</p>
+          </td>
+          <td>
+            <p><strong>${ui.reqName}:</strong> <span contenteditable="true">${t2_name}</span></p>
+            <p><strong>${ui.reqAddr}:</strong> <span contenteditable="true">${t2_addr}</span></p>
+            <p><strong>${ui.reqTax}:</strong> <span contenteditable="true">${t2_tax}</span></p>
+            <p class="sig-space">${ui.reqSig}</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  const complete = t.required.every(id => values[id] && values[id].trim());
+  document.getElementById("seal").classList.toggle("show", complete);
+}
+
+function renderAll(){
+  renderTabs();
+  renderForm();
+  renderDoc();
+}
+
+document.getElementById("printBtn").onclick = () => window.print();
+
+document.getElementById("downloadPdfBtn").onclick = () => {
+  const element = document.getElementById("paper");
+  const opt = {
+    margin:       10,
+    filename:     templates[currentTemplate].label[currentLang].replace(/\s+/g,"_") + ".pdf",
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+};
+
+document.getElementById("downloadDocxBtn").onclick = () => {
+  const content = document.getElementById("paper").innerHTML;
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <title>${templates[currentTemplate].label[currentLang]}</title>
+      <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.6; }
+        h1 { text-align: center; font-size: 18pt; text-transform: uppercase; }
+        h2 { font-size: 12pt; margin-top: 18pt; }
+        p { font-size: 11pt; text-align: justify; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20pt; }
+        th, td { border: 1px solid #000; padding: 8pt; text-align: left; vertical-align: top; font-size: 10.5pt; }
+        .sig-space { margin-top: 30pt; }
+        .seal { display: none; }
+      </style>
+    </head>
+    <body>${content}</body>
+    </html>
+  `;
+  const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = templates[currentTemplate].label[currentLang].replace(/\s+/g,"_") + ".docx";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+renderAll();
+</script>
+
+<script>
+/* =====================================================================
+   MÜQAVİLƏ ANALİZİ MODULU — bu skript "Müqavilə generatoru" moduluna
+   (yuxarıdakı script blokuna) TOXUNMUR, ondan tamamilə asılı deyil.
+   ===================================================================== */
+
+/* ---------- Modul keçidi ---------- */
+function switchModule(name){
+  const gen = document.getElementById("module-generator");
+  const ana = document.getElementById("module-analysis");
+  const docs = document.getElementById("module-docs");
+  const btnGen = document.getElementById("navBtnGenerator");
+  const btnAna = document.getElementById("navBtnAnalysis");
+  const btnDocs = document.getElementById("navBtnDocs");
+
+  gen.style.display = (name === "generator") ? "block" : "none";
+  ana.style.display = (name === "analysis") ? "block" : "none";
+  docs.style.display = (name === "docs") ? "block" : "none";
+
+  btnGen.classList.toggle("active", name === "generator");
+  btnAna.classList.toggle("active", name === "analysis");
+  btnDocs.classList.toggle("active", name === "docs");
+}
+
+/* ---------- Fayl seçimi (drag&drop + klik) ---------- */
+let selectedFile = null;
+let extractedText = "";
+let pendingAnalysisText = "";
+let currentUserRole = null;
+let currentFindings = null;
+let currentOriginalText = "";
+
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("analysisFileInput");
+const fileChipHolder = document.getElementById("fileChipHolder");
+const analyzeBtn = document.getElementById("analyzeBtn");
+const statusBox = document.getElementById("analysisStatus");
+const statusText = document.getElementById("analysisStatusText");
+const previewBlock = document.getElementById("extractedPreviewBlock");
+const previewText = document.getElementById("extractedPreviewText");
+
+dropzone.addEventListener("click", () => fileInput.click());
+dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
+  if(e.dataTransfer.files && e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener("change", (e) => {
+  if(e.target.files && e.target.files[0]) handleFileSelect(e.target.files[0]);
+});
+
+function fileExt(name){
+  const parts = name.split(".");
+  return parts.length > 1 ? parts.pop().toLowerCase() : "";
+}
+
+function iconFor(ext){
+  if(ext === "pdf") return "📕";
+  if(ext === "docx" || ext === "doc") return "📘";
+  if(ext === "jpg" || ext === "jpeg") return "🖼️";
+  return "📄";
+}
+
+function handleFileSelect(file){
+  const ext = fileExt(file.name);
+  const allowed = ["pdf","docx","doc","jpeg","jpg"];
+  if(!allowed.includes(ext)){
+    alert("Dəstəklənməyən fayl formatı. Zəhmət olmasa .pdf, .docx, .doc, .jpeg və ya .jpg formatında fayl seçin.");
+    return;
+  }
+  selectedFile = file;
+  extractedText = "";
+  resetResults();
+  fileChipHolder.innerHTML = `
+    <div class="file-chip">
+      <span class="fc-icon">${iconFor(ext)}</span>
+      <span class="fc-name">${file.name}</span>
+      <button class="fc-remove" onclick="clearSelectedFile()" title="Sil">×</button>
+    </div>
+  `;
+  analyzeBtn.disabled = false;
+  previewBlock.style.display = "none";
+}
+
+function clearSelectedFile(){
+  selectedFile = null;
+  extractedText = "";
+  fileChipHolder.innerHTML = "";
+  fileInput.value = "";
+  analyzeBtn.disabled = true;
+  previewBlock.style.display = "none";
+  resetResults();
+}
+
+function resetResults(){
+  document.getElementById("analysisEmptyState").style.display = "";
+  document.getElementById("analysisResultsContent").style.display = "none";
+  document.getElementById("analysisResultsContent").innerHTML = "";
+  document.getElementById("roleSelectionPanel").style.display = "none";
+  document.getElementById("roleSelectionPanel").innerHTML = "";
+  document.getElementById("revisedContractOffer").style.display = "none";
+  document.getElementById("revisedDownloadArea").style.display = "none";
+  pendingAnalysisText = "";
+  currentUserRole = null;
+  currentFindings = null;
+  currentOriginalText = "";
+}
+
+function setStatus(msg){
+  statusBox.style.display = "flex";
+  statusText.textContent = msg;
+}
+function hideStatus(){
+  statusBox.style.display = "none";
+}
+
+/* ---------- Mətn çıxarma (PDF / DOCX / DOC / JPEG-JPG) ---------- */
+async function extractTextFromFile(file){
+  const ext = fileExt(file.name);
+
+  if(ext === "pdf"){
+    setStatus("PDF oxunur və mətn çıxarılır...");
+    const buf = await file.arrayBuffer();
+    if(window.pdfjsLib){
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let text = "";
+    for(let i = 1; i <= pdf.numPages; i++){
+      setStatus(`PDF oxunur (səhifə ${i}/${pdf.numPages})...`);
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it => it.str).join(" ") + "\n";
+    }
+    return text;
+  }
+
+  if(ext === "docx"){
+    setStatus("DOCX sənədi oxunur...");
+    const buf = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: buf });
+    return result.value || "";
+  }
+
+  if(ext === "doc"){
+    setStatus("DOC sənədi oxunur (məhdud dəstək)...");
+    const buf = await file.arrayBuffer();
+    // Köhnə binar .doc formatı üçün tam parser mövcud deyil.
+    // Sadə fallback: oxuna bilən mətn seqmentlərini çıxarırıq.
+    const bytes = new Uint8Array(buf);
+    let raw = "";
+    for(let i = 0; i < bytes.length; i++){
+      const c = bytes[i];
+      raw += (c >= 32 && c < 127) ? String.fromCharCode(c) : " ";
+    }
+    const chunks = raw.match(/[A-Za-z0-9ƏəIıİiÖöÜüÇçĞğŞş.,;:!?()%\-\/ ]{5,}/g) || [];
+    return chunks.join("\n");
+  }
+
+  if(ext === "jpg" || ext === "jpeg"){
+    setStatus("Şəkil OCR ilə oxunur, bu bir qədər vaxt ala bilər...");
+    if(!window.Tesseract){
+      throw new Error("OCR mühərriki yüklənmədi.");
+    }
+    try{
+      const { data } = await Tesseract.recognize(file, "aze", {
+        logger: (m) => {
+          if(m.status && typeof m.progress === "number"){
+            setStatus(`OCR: ${m.status} (${Math.round(m.progress*100)}%)`);
+          }
+        }
+      });
+      return data.text || "";
+    } catch(e){
+      const { data } = await Tesseract.recognize(file, "eng");
+      return data.text || "";
+    }
+  }
+
+  return "";
+}
+
+/* ---------- Analiz düyməsi ---------- */
+analyzeBtn.addEventListener("click", async () => {
+  if(!selectedFile) return;
+  analyzeBtn.disabled = true;
+  resetResults();
+  setStatus("Sənəd oxunur...");
+  try{
+    const text = await extractTextFromFile(selectedFile);
+    extractedText = (text || "").replace(/\s+\n/g, "\n").trim();
+
+    previewText.textContent = extractedText ? extractedText.slice(0, 8000) : "(mətn tapılmadı)";
+    previewBlock.style.display = "";
+
+    if(!extractedText || extractedText.length < 20){
+      hideStatus();
+      analyzeBtn.disabled = false;
+      alert("Sənəddən kifayət qədər mətn çıxarıla bilmədi. Fayl skan keyfiyyəti aşağı ola bilər və ya format düzgün oxunmadı.");
+      return;
+    }
+
+    hideStatus();
+    showRoleSelection(extractedText);
+  } catch(err){
+    console.error(err);
+    hideStatus();
+    alert("Sənəd oxunarkən xəta baş verdi: " + (err && err.message ? err.message : err));
+  } finally {
+    analyzeBtn.disabled = false;
+  }
+});
+
+/* =====================================================================
+   TƏRƏF SEÇİMİ
+   Təhlildən əvvəl müştəridən müqavilənin hansı tərəfi olduğunu soruşur,
+   cavaba əsasən tapılan risklər onun mövqeyinə görə şərh olunur.
+   ===================================================================== */
+
+const ROLE_PAIR_LIST = [
+  ["Sifarişçi","İcraçı"],
+  ["Sifarişçi","Podratçı"],
+  ["İşəgötürən","İşçi"],
+  ["Kirayə verən","Kirayəçi"],
+  ["Icarəyə verən","İcarəçi"],
+  ["Alıcı","Satıcı"],
+  ["Borcverən","Borcalan"],
+  ["Kreditor","Borclu"],
+  ["Zaminlik verən","Zamin"],
+  ["Lisenziar","Lisenziat"],
+];
+
+function detectRolePairs(text){
+  const lower = text.toLowerCase();
+
+  // 1) Mətndə açıq şəkildə dırnaq içində göstərilən adlandırmalar:
+  //    məs. "...(bundan sonra "İcraçı" adlandırılacaq)..."
+  const quoteRe = /bundan\s+(sonra|belə)[^"«]{0,15}["«]([^"»]{2,40})["»]/gi;
+  const quoted = [];
+  let m;
+  while((m = quoteRe.exec(text)) !== null){
+    const label = m[2].trim();
+    if(label && !quoted.includes(label)) quoted.push(label);
+  }
+  if(quoted.length >= 2) return quoted.slice(0, 4);
+
+  // 2) Qabaqcadan tanınan tərəf cütlükləri
+  const found = [];
+  ROLE_PAIR_LIST.forEach(pair => {
+    if(lower.includes(pair[0].toLowerCase()) && lower.includes(pair[1].toLowerCase())){
+      pair.forEach(p => { if(!found.includes(p)) found.push(p); });
+    }
+  });
+  if(found.length >= 2) return found.slice(0, 4);
+
+  return [];
+}
+
+function showRoleSelection(text){
+  pendingAnalysisText = text;
+  const roles = detectRolePairs(text);
+
+  document.getElementById("analysisEmptyState").style.display = "none";
+  document.getElementById("analysisResultsContent").style.display = "none";
+  document.getElementById("revisedContractOffer").style.display = "none";
+  document.getElementById("revisedDownloadArea").style.display = "none";
+
+  const panel = document.getElementById("roleSelectionPanel");
+
+  let optionsHtml = "";
+  if(roles.length >= 2){
+    roles.forEach((r, i) => {
+      optionsHtml += `<label class="role-option"><input type="radio" name="userRoleChoice" value="${escapeHtml(r)}" ${i===0 ? "checked" : ""}> ${escapeHtml(r)}</label>`;
+    });
+  } else {
+    optionsHtml += `<label class="role-option"><input type="radio" name="userRoleChoice" value="__A" checked> 1-ci tərəf</label>`;
+    optionsHtml += `<label class="role-option"><input type="radio" name="userRoleChoice" value="__B"> 2-ci tərəf</label>`;
+  }
+  optionsHtml += `<div class="role-custom-row">
+    <label><input type="radio" name="userRoleChoice" value="__custom"> Digər (özüm yazıram):</label>
+    <input type="text" id="roleCustomInput" placeholder="Məs: Podratçı">
+  </div>`;
+
+  panel.innerHTML = `
+    <div class="role-select-title">Siz müqavilənin hansı tərəfisiniz?</div>
+    <div class="role-select-hint">Cavabınıza əsasən aşkarlanan riskli şərtlərin sizin xeyrinizə, yoxsa əleyhinizə olduğu göstəriləcək və düzəliş təklifləri sizin mövqeyiniz qorunmaqla formalaşdırılacaq.</div>
+    <div class="role-options-list">${optionsHtml}</div>
+    <button class="analysis-btn" id="roleConfirmBtn" style="margin-top:14px;">Təhlili göstər</button>
+  `;
+  panel.style.display = "";
+
+  document.getElementById("roleConfirmBtn").addEventListener("click", () => {
+    const checked = panel.querySelector('input[name="userRoleChoice"]:checked');
+    let mineLabel = "";
+    if(checked.value === "__custom"){
+      mineLabel = (document.getElementById("roleCustomInput").value || "").trim() || "Mənim tərəfim";
+    } else if(checked.value === "__A"){
+      mineLabel = "1-ci tərəf";
+    } else if(checked.value === "__B"){
+      mineLabel = "2-ci tərəf";
+    } else {
+      mineLabel = checked.value;
+    }
+
+    let otherLabel = "qarşı tərəf";
+    if(roles.length >= 2){
+      const other = roles.find(r => r !== mineLabel);
+      if(other) otherLabel = other;
+    } else if(checked.value === "__A"){
+      otherLabel = "2-ci tərəf";
+    } else if(checked.value === "__B"){
+      otherLabel = "1-ci tərəf";
+    }
+
+    currentUserRole = { mine: mineLabel, other: otherLabel };
+    panel.style.display = "none";
+    runFullAnalysis(pendingAnalysisText, currentUserRole);
+  });
+}
+
+function runFullAnalysis(text, role){
+  const findings = analyzeContract(text, role);
+  renderFindings(findings, role, text);
+}
+
+/* =====================================================================
+   HEURİSTİK TƏHLİL MÜHƏRRİKİ
+   Qeyd-əsaslı, sözlərə/ifadələrə görə skan edən sadə mühərrik.
+   Yalnız: (1) hüquqi risklər, (2) çatışmayan bənd/yarımbəndlər.
+   ===================================================================== */
+
+const STANDARD_CLAUSES = [
+  { key:"terefler", labels:["tərəflər"], name:"Tərəflər (razılaşan tərəflərin tanınması)" },
+  { key:"predmet", labels:["müqavilənin predmeti","predmet"], name:"Müqavilənin predmeti" },
+  { key:"qiymet", labels:["qiymət","ödəniş","hesablaşma"], name:"Qiymət və ödəniş qaydası" },
+  { key:"huquq_vezife", labels:["hüquq və vəzifə","tərəflərin hüquqları"], name:"Tərəflərin hüquq və vəzifələri" },
+  { key:"mesuliyyet", labels:["məsuliyyət"], name:"Tərəflərin məsuliyyəti" },
+  { key:"fors", labels:["fors-major","fors major","qarşısıalınmaz"], name:"Fors-major (qarşısıalınmaz hallar)" },
+  { key:"mexfilik", labels:["məxfilik","kommersiya sirri","gizli məlumat"], name:"Məxfilik / kommersiya sirri" },
+  { key:"legv", labels:["müqavilənin ləğvi","xitam","müqavilənin xitamı"], name:"Müqavilənin ləğvi / xitamı" },
+  { key:"mubahise", labels:["mübahisələrin həlli","mübahisə"], name:"Mübahisələrin həlli qaydası" },
+  { key:"yekun", labels:["yekun müddəalar","digər şərtlər"], name:"Yekun müddəalar" },
+];
+
+/* Standart bənd mövcud olduqda daxilində yoxlanılan yarımbəndlər (alt-şərtlər) */
+const SUBCLAUSE_CHECKS = {
+  terefler: [
+    { test:(w)=>/vöen|fin\b/i.test(w), missing:"Tərəflərin identifikasiya rekvizitləri (VÖEN / FİN) yarımbəndi", suggestion:"Hər bir tərəfin VÖEN (hüquqi şəxs) və ya FİN (fiziki şəxs) rekvizitlərini bənddə dəqiq göstərin." },
+    { test:(w)=>/ünvan/i.test(w), missing:"Tərəflərin hüquqi/faktiki ünvanı yarımbəndi", suggestion:"Hər bir tərəfin hüquqi və ya faktiki ünvanını bənddə əlavə edin." },
+  ],
+  qiymet: [
+    { test:(w)=>/\d/.test(w) && /(azn|məbləğ|qiymət)/i.test(w), missing:"Konkret məbləğ/qiymət yarımbəndi", suggestion:"Ödəniləcək məbləği rəqəmlə və valyuta ilə (məsələn, AZN) dəqiq göstərin." },
+    { test:(w)=>/(gün|tarix|müddət)/i.test(w), missing:"Ödəniş müddəti/qaydası yarımbəndi", suggestion:"Ödənişin hansı müddətdə və hansı qaydada (bank köçürməsi və s.) həyata keçiriləcəyini göstərin." },
+  ],
+  mesuliyyet: [
+    { test:(w)=>/(zərər|kompensasiya|cərimə|dəbbə)/i.test(w), missing:"Məsuliyyətin həcmi/forması yarımbəndi", suggestion:"Öhdəliyin pozulması halında dəyəcək zərərin necə kompensasiya ediləcəyini (məbləğ, faiz və ya qayda) konkretləşdirin." },
+  ],
+  fors: [
+    { test:(w)=>/bildir/i.test(w), missing:"Digər tərəfin məlumatlandırılması (bildiriş) yarımbəndi", suggestion:"Fors-major halının baş verdiyi barədə digər tərəfin hansı müddətdə və qaydada məlumatlandırılacağını göstərin." },
+  ],
+  legv: [
+    { test:(w)=>/bildir/i.test(w) || /gün.{0,10}əvvəl/i.test(w), missing:"Xitam/ləğv bildirişinin müddəti yarımbəndi", suggestion:"Müqavilənin ləğvi/xitamı üçün neçə gün əvvəldən yazılı bildiriş veriləcəyini konkret göstərin." },
+  ],
+  mubahise: [
+    { test:(w)=>/(məhkəmə|arbitraj)/i.test(w), missing:"Mübahisənin son həll instansiyası yarımbəndi", suggestion:"Danışıqlar nəticəsiz qaldıqda mübahisənin hansı məhkəmədə və ya arbitrajda həll ediləcəyini göstərin." },
+  ],
+};
+
+const RISKY_PHRASES = [
+  { re:/qeyri-məhdud məsuliyyət/i, title:"Limitsiz məsuliyyət şərti", note:"Qeyri-məhdud (limitsiz) məsuliyyət öhdəliyi aşkarlandı." },
+  { re:/birtərəfli qaydada.{0,40}(ləğv|xitam)/i, title:"Birtərəfli ləğv/xitam hüququ", note:"Bir tərəfə birtərəfli qaydada ləğv/xitam hüququ verən müddəa aşkarlandı — qarşılıqlılıq yoxlanılmalıdır." },
+  { re:/heç bir kompensasiya.{0,30}ödənilmir/i, title:"Kompensasiyanın istisna edilməsi", note:"Kompensasiyanın istisna edildiyi bənd aşkarlandı." },
+  { re:/dəyişdirmək hüququnu özündə saxlayır/i, title:"Şərtləri birtərəfli dəyişdirmək hüququ", note:"Bir tərəfin şərtləri təkbaşına dəyişdirmək hüququ nəzərdə tutulub." },
+  { re:/cərimə.{0,20}(sərhədsiz|limitsiz|qeyri-məhdud)/i, title:"Limitsiz cərimə/dəbbə pulu şərti", note:"Limitsiz cərimə/dəbbə pulu şərti aşkarlandı." },
+];
+
+function snippetAround(text, idx, phraseLen, radius){
+  radius = radius || 45;
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(text.length, idx + phraseLen + radius);
+  return (start > 0 ? "…" : "") + text.slice(start, end).replace(/\s+/g, " ").trim() + (end < text.length ? "…" : "");
+}
+
+/* Mövcud bir bəndin mətn "pəncərəsini" (öz başlığından növbəti bənd başlığınadək olan hissəni) tapır */
+function findClauseWindow(text, lower, labels){
+  let start = -1;
+  labels.forEach(l => {
+    const idx = lower.indexOf(l);
+    if(idx !== -1 && (start === -1 || idx < start)) start = idx;
+  });
+  if(start === -1) return null;
+
+  const allLabels = STANDARD_CLAUSES.flatMap(c => c.labels);
+  let end = text.length;
+  allLabels.forEach(l => {
+    if(labels.includes(l)) return;
+    const idx = lower.indexOf(l, start + 10);
+    if(idx !== -1 && idx < end) end = idx;
+  });
+  if(end - start > 1500) end = start + 1500;
+  return text.slice(start, end);
+}
+
+function analyzeContract(text, role){
+  const lower = text.toLowerCase();
+  const findings = {
+    huquqi: [],
+    chatismayan: [],
+  };
+  const roleNote = role ? ` Bu, ${role.mine} tərəfi kimi sizin də mənafeyinizin qorunmasına kömək edəcək.` : "";
+
+  /* 1) Çatışmayan müqavilə bəndləri VƏ yarımbəndlər */
+  STANDARD_CLAUSES.forEach(clause => {
+    const present = clause.labels.some(l => lower.includes(l));
+    if(!present){
+      findings.chatismayan.push({
+        title: clause.name + " bəndi tapılmadı",
+        detail: "Mətndə bu standart bəndə aid heç bir başlıq və ya ifadə aşkarlanmadı.",
+        suggestion: `Müqaviləyə "${clause.name}" adlı ayrıca bənd əlavə edin ki, tərəflərin bu məsələ üzrə hüquq və öhdəlikləri aydın müəyyən olunsun.${roleNote}`
+      });
+      return;
+    }
+    // Bənd mövcuddur — daxilindəki yarımbəndləri yoxla
+    const checks = SUBCLAUSE_CHECKS[clause.key];
+    if(!checks) return;
+    const window = findClauseWindow(text, lower, clause.labels);
+    if(!window) return;
+    checks.forEach(chk => {
+      if(!chk.test(window)){
+        findings.chatismayan.push({
+          title: `"${clause.name}" bəndində ${chk.missing} çatışmır`,
+          detail: `"${clause.name}" bəndi mətndə var, lakin bu bənd daxilində gözlənilən "${chk.missing}" aşkarlanmadı.`,
+          suggestion: chk.suggestion + roleNote
+        });
+      }
+    });
+  });
+
+  /* 2) Hüquqi risklər (riskli ifadələr) */
+  RISKY_PHRASES.forEach(rp => {
+    const m = text.match(rp.re);
+    if(m){
+      const context = snippetAround(text, m.index, m[0].length, 170);
+      const contextLower = context.toLowerCase();
+      let title = rp.title;
+      let suggestion = "Bu müddəanı hər iki tərəf üçün balanslaşdırılmış, aydın hədd və şərtlərlə yenidən formalaşdırın.";
+
+      if(role){
+        const mineHit = role.mine && contextLower.includes(role.mine.toLowerCase());
+        const otherHit = role.other && contextLower.includes(role.other.toLowerCase());
+        if(otherHit && !mineHit){
+          title = `${rp.title} — sizin əleyhinizə ola bilər`;
+          suggestion = `Bu şərt görünür ki, ${role.other} tərəfinin xeyrinə formalaşdırılıb. ${role.mine} tərəfi kimi danışıqlarda bu bəndin dəyişdirilməsini və hər iki tərəf üçün bərabər öhdəlik qoyulmasını tələb etməyi düşünün.`;
+        } else if(mineHit && !otherHit){
+          title = `${rp.title} — sizin xeyrinizə ola bilər`;
+          suggestion = `Bu şərt ${role.mine} tərəfinin, yəni sizin, xeyrinizə görünür. Diqqət: qarşı tərəf danışıqlar zamanı bunun balanslaşdırılmasını tələb edə bilər.`;
+        }
+      }
+
+      findings.huquqi.push({
+        title: title,
+        detail: rp.note + " Kontekst: " + context,
+        suggestion: suggestion
+      });
+    }
+  });
+  // Ümumi hüquqi yoxlama: tərəflərin qarşılıqlı balansı
+  if(lower.includes("bir tərəf") && !lower.includes("hər iki tərəf") && lower.includes("ləğv")){
+    findings.huquqi.push({
+      title:"Tərəflər arasında qeyri-bərabər hüquq balansı ola bilər",
+      detail:"Ləğv/xitam ilə bağlı müddəalarda yalnız bir tərəfin adı ilə bağlı ifadələr üstünlük təşkil edir.",
+      suggestion: role
+        ? `Ləğv və xitam hüquqlarının hər iki tərəfə, o cümlədən ${role.mine} tərəfinə bərabər şəkildə şamil olunduğunu yoxlayın və mətndə aydınlaşdırın.`
+        : "Ləğv və xitam hüquqlarının hər iki tərəfə bərabər şəkildə şamil olunduğunu yoxlayın və mətndə aydınlaşdırın."
+    });
+  }
+  if(!lower.includes("qanunvericilik") && !lower.includes("qanunvericiliyinə uyğun")){
+    findings.huquqi.push({
+      title:"Tətbiq olunan qanunvericiliyə istinad aydın deyil",
+      detail:"Mətndə hansı ölkənin/hüquq sisteminin qanunvericiliyinin tətbiq olunacağına açıq istinad tapılmadı.",
+      suggestion:"Müqaviləyə \"Bu müqaviləyə Azərbaycan Respublikasının qanunvericiliyi tətbiq edilir\" tipli bənd əlavə edin."
+    });
+  }
+
+  return findings;
+}
+
+/* ---------- Nəticələrin göstərilməsi ---------- */
+const CATEGORY_META = {
+  huquqi:        { title:"Hüquqi risklər",                             icon:"⚖️" },
+  chatismayan:   { title:"Çatışmayan bənd və yarımbəndlər",            icon:"📋" },
+};
+
+function renderFindings(findings, role, originalText){
+  currentFindings = findings;
+  currentUserRole = role || null;
+  currentOriginalText = originalText || "";
+
+  const emptyState = document.getElementById("analysisEmptyState");
+  const content = document.getElementById("analysisResultsContent");
+  emptyState.style.display = "none";
+  content.style.display = "";
+
+  const allItems = Object.values(findings).flat();
+  if(allItems.length === 0){
+    content.innerHTML = `<div class="analysis-empty-state" style="padding:20px 0;"><div class="ee-icon">✅</div>Aşkar bir problem tapılmadı. Yenə də mətni diqqətlə yoxlamağı tövsiyə edirik.</div>`;
+  } else {
+    let html = "";
+    Object.keys(CATEGORY_META).forEach(catKey => {
+      const items = findings[catKey];
+      if(!items || items.length === 0) return;
+      const meta = CATEGORY_META[catKey];
+      html += `<div class="risk-category">
+        <div class="risk-category-title">${meta.icon} ${meta.title} <span class="risk-count-badge">${items.length}</span></div>`;
+      items.forEach(it => {
+        html += `<div class="risk-item">
+          <div class="risk-item-title">${escapeHtml(it.title)}</div>
+          <div class="risk-item-detail">${escapeHtml(it.detail)}</div>
+          <div class="risk-item-suggestion"><b>Təklif:</b> ${escapeHtml(it.suggestion)}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    content.innerHTML = html;
+  }
+
+  document.getElementById("revisedDownloadArea").style.display = "none";
+  document.getElementById("revisedContractOffer").style.display = "";
+}
+
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------- Reviziya olunmuş müqavilə versiyası ---------- */
+document.getElementById("revisedYesBtn").addEventListener("click", () => {
+  document.getElementById("revisedDownloadArea").style.display = "";
+});
+document.getElementById("revisedNoBtn").addEventListener("click", () => {
+  document.getElementById("revisedDownloadArea").style.display = "none";
+});
+document.getElementById("downloadRevisedBtn").addEventListener("click", () => {
+  downloadRevisedContract(currentOriginalText, currentFindings, currentUserRole, selectedFile);
+});
+
+function downloadRevisedContract(originalText, findings, role, file){
+  const esc = (s) => String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+  let itemsHtml = "";
+  Object.keys(CATEGORY_META).forEach(catKey => {
+    const items = findings ? findings[catKey] : null;
+    if(!items || items.length === 0) return;
+    const meta = CATEGORY_META[catKey];
+    itemsHtml += `<h2>${meta.icon} ${esc(meta.title)}</h2>`;
+    items.forEach((it, i) => {
+      itemsHtml += `<p><b>${i+1}. ${esc(it.title)}</b><br>${esc(it.detail)}<br><i>Təklif olunan düzəliş:</i> ${esc(it.suggestion)}</p>`;
+    });
+  });
+  if(!itemsHtml){
+    itemsHtml = "<p>Aşkar edilmiş problem olmadığı üçün əlavə düzəliş təklifi yoxdur.</p>";
+  }
+
+  const roleNote = role
+    ? `<p><i>Qeyd: aşağıdakı düzəliş təklifləri ${esc(role.mine)} tərəfinin mövqeyi nəzərə alınmaqla hazırlanıb.</i></p>`
+    : "";
+
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <title>Müqavilə — Reviziya Layihəsi</title>
+      <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.6; }
+        h1 { text-align: center; font-size: 16pt; }
+        h2 { font-size: 12pt; margin-top: 18pt; }
+        p { font-size: 11pt; text-align: justify; }
+        .orig-text { white-space: pre-wrap; font-size: 11pt; }
+      </style>
+    </head>
+    <body>
+      <h1>MÜQAVİLƏ — REVİZİYA LAYİHƏSİ</h1>
+      <p><i>Bu sənəd avtomatlaşdırılmış, qayda-əsaslı təhlil nəticəsində yaradılmış təklif xarakterli reviziya layihəsidir. Peşəkar hüquqi rəyi əvəz etmir; imzalanmadan əvvəl hüquqşünas tərəfindən yenidən nəzərdən keçirilməsi tövsiyə olunur.</i></p>
+      ${roleNote}
+      <h2>Orijinal mətn</h2>
+      <div class="orig-text">${esc(originalText)}</div>
+      <h2>Təklif olunan düzəlişlər və əlavələr</h2>
+      ${itemsHtml}
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const baseName = (file && file.name ? file.name.replace(/\.[^.]+$/, "") : "muqavile");
+  a.download = baseName + "_reviziya.docx";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+
+<script>
+/* =====================================================================
+   SƏNƏD GENERATORU MODULU (Ərizə / Arayış / Hesabat / Rəsmi məktub)
+   Bu skript "Müqavilə generatoru" və "Müqavilə analizi" modullarına
+   TOXUNMUR, onlardan tamamilə asılı deyil, öz izolə olunmuş dəyişən
+   adlarından istifadə edir (IIFE ilə global sahəni çirkləndirmir).
+   ===================================================================== */
+(function(){
+
+function docsFmt(val, emptyLabel){
+  if(!val || !String(val).trim()) return `<span class="placeholder-empty">${emptyLabel}</span>`;
+  return String(val).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+}
+
+const DOCS_EMPTY = "[doldurulmayıb]";
+
+const docTemplates = {
+
+  ariza: {
+    label: "Ərizə",
+    hint: "Rəsmi qurum, təşkilat və ya vəzifəli şəxsə ünvanlanan tələb/müraciət ərizəsi üçün istifadə olunur.",
+    required: ["alan","ad","metn"],
+    fields: [
+      {id:"alan", label:"Ünvanlandığı vəzifəli şəxs / qurum", type:"text", placeholder:"\"Progress Group\" MMC-nin direktoru cənab A. Məmmədova"},
+      {id:"ad", label:"Ərizəçinin adı, soyadı", type:"text", placeholder:"Elvin Əliyev"},
+      {id:"vezife", label:"Ərizəçinin vəzifəsi (aiddirsə)", type:"text", placeholder:"Mühasib"},
+      {id:"unvan", label:"Ərizəçinin ünvanı", type:"text", placeholder:"Bakı ş., Nərimanov r., ..."},
+      {id:"fin", label:"FİN / şəxsiyyət vəsiqəsi seriyası", type:"text", placeholder:"AZE1234567"},
+      {id:"elaqe", label:"Əlaqə nömrəsi", type:"text", placeholder:"+994 50 000 00 00"},
+      {id:"movzu", label:"Mövzu (qısa)", type:"text", placeholder:"Məzuniyyət verilməsi haqqında"},
+      {id:"metn", label:"Ərizənin mətni", type:"textarea", placeholder:"Xahiş edirəm mənə 15.07.2026-cı il tarixindən 29.07.2026-cı il tarixinədək növbəti əmək məzuniyyəti verilsin."},
+      {id:"sheher", label:"Şəhər", type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:"Tarix", type:"text", placeholder:"07.07.2026"}
+    ],
+    render: (v) => {
+      const f = (id) => docsFmt(v[id], DOCS_EMPTY);
+      return `
+        <div class="doc-meta-block" contenteditable="true" style="text-align:right;">
+          ${f("alan")}<br>
+          ${f("ad")}${v.vezife ? " ("+f("vezife")+")" : ""}<br>
+          ${v.unvan ? "Ünvan: "+f("unvan")+"<br>" : ""}
+          ${v.fin ? "FİN: "+f("fin")+"<br>" : ""}
+          ${v.elaqe ? "Əlaqə: "+f("elaqe") : ""}
+        </div>
+        <h1 contenteditable="true">ƏRİZƏ</h1>
+        ${v.movzu ? `<p class="doc-subject" contenteditable="true"><strong>Mövzu:</strong> ${f("movzu")}</p>` : ""}
+        <p contenteditable="true">${f("metn")}</p>
+        <p class="sig-space" contenteditable="true">${f("sheher")}, ${f("tarix")} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; İmza: _____________________</p>
+      `;
+    }
+  },
+
+  arayis: {
+    label: "Arayış",
+    hint: "Qurum tərəfindən şəxs haqqında müəyyən faktı (iş yeri, təhsil, status və s.) təsdiqləyən sənəd üçün istifadə olunur.",
+    required: ["veren_qurum","sexs_ad","mezmun"],
+    fields: [
+      {id:"veren_qurum", label:"Arayışı verən qurumun adı", type:"text", placeholder:"\"Nurlan Tech\" MMC"},
+      {id:"qurum_unvan", label:"Qurumun ünvanı", type:"text", placeholder:"Bakı ş., Yasamal r., ..."},
+      {id:"reg_nomre", label:"Qeydiyyat nömrəsi (№)", type:"text", placeholder:"112"},
+      {id:"sexs_ad", label:"Arayış verilən şəxsin adı, soyadı", type:"text", placeholder:"Aygün Hüseynova"},
+      {id:"sexs_fin", label:"FİN / şəxsiyyət vəsiqəsi", type:"text", placeholder:"AZE7654321"},
+      {id:"mezmun", label:"Arayışın məzmunu", type:"textarea", placeholder:"01.02.2023-cü il tarixindən hazırkı günədək \"Mühasib\" vəzifəsində çalışdığını təsdiq edir."},
+      {id:"meqsed", label:"Tələb olunan yer / istifadə məqsədi", type:"text", placeholder:"Tələb olunan yerə təqdim etmək üçün verilmişdir."},
+      {id:"imza_sexs", label:"İmza edən şəxsin adı, vəzifəsi", type:"text", placeholder:"Kadrlar şöbəsinin müdiri A. Əliyev"},
+      {id:"sheher", label:"Şəhər", type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:"Tarix", type:"text", placeholder:"07.07.2026"}
+    ],
+    render: (v) => {
+      const f = (id) => docsFmt(v[id], DOCS_EMPTY);
+      return `
+        <div class="doc-meta-block" contenteditable="true">
+          ${f("veren_qurum")}<br>
+          ${v.qurum_unvan ? f("qurum_unvan") : ""}
+        </div>
+        <h1 contenteditable="true">ARAYIŞ</h1>
+        <div class="doc-meta" contenteditable="true">№ ${f("reg_nomre")} &nbsp;&nbsp;|&nbsp;&nbsp; ${f("sheher")}, ${f("tarix")}</div>
+        <p contenteditable="true">Bu arayış ${f("sexs_ad")}${v.sexs_fin ? " (FİN: "+f("sexs_fin")+")" : ""} haqqında olub, aşağıdakını təsdiq edir: ${f("mezmun")}</p>
+        ${v.meqsed ? `<p contenteditable="true">${f("meqsed")}</p>` : ""}
+        <p class="sig-space" contenteditable="true">${f("imza_sexs")} &nbsp;&nbsp;&nbsp; İmza: _____________________ &nbsp;&nbsp;&nbsp; M.Y.</p>
+      `;
+    }
+  },
+
+  hesabat: {
+    label: "Hesabat",
+    hint: "Görülmüş işlər, nəticələr və təkliflər barədə rəhbərliyə və ya digər quruma təqdim olunan hesabat üçün istifadə olunur.",
+    required: ["hazirlayan","qurum","gorulmus_isler"],
+    fields: [
+      {id:"hazirlayan", label:"Hesabatı hazırlayan (ad, vəzifə)", type:"text", placeholder:"Elvin Əliyev, layihə meneceri"},
+      {id:"qurum", label:"Qurum / şöbə", type:"text", placeholder:"\"Progress Group\" MMC, Satış şöbəsi"},
+      {id:"unvanlandigi", label:"Ünvanlandığı şəxs / qurum", type:"text", placeholder:"Baş direktor cənab R. Quliyevə"},
+      {id:"dovr", label:"Hesabat dövrü", type:"text", placeholder:"2026-cı il, II rüb"},
+      {id:"gorulmus_isler", label:"Görülmüş işlər", type:"textarea", placeholder:"Hesabat dövrü ərzində görülən əsas işlər, layihələr və fəaliyyətlər barədə məlumat..."},
+      {id:"neticeler", label:"Nəticələr", type:"textarea", placeholder:"Görülən işlərin əsas nəticələri, əldə olunan göstəricilər..."},
+      {id:"teklifler", label:"Təkliflər", type:"textarea", placeholder:"Gələcək dövr üçün təklif olunan tədbirlər..."},
+      {id:"sheher", label:"Şəhər", type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:"Tarix", type:"text", placeholder:"07.07.2026"}
+    ],
+    render: (v) => {
+      const f = (id) => docsFmt(v[id], DOCS_EMPTY);
+      return `
+        <div class="doc-meta-block" contenteditable="true">${f("qurum")}</div>
+        <h1 contenteditable="true">HESABAT</h1>
+        <div class="doc-meta" contenteditable="true">${f("dovr")} dövrü üzrə &nbsp;|&nbsp; ${f("sheher")}, ${f("tarix")}</div>
+        ${v.unvanlandigi ? `<p class="doc-subject" contenteditable="true"><strong>Ünvanlandığı:</strong> ${f("unvanlandigi")}</p>` : ""}
+        <h2 contenteditable="true">1. Görülmüş işlər</h2>
+        <p contenteditable="true">${f("gorulmus_isler")}</p>
+        <h2 contenteditable="true">2. Nəticələr</h2>
+        <p contenteditable="true">${f("neticeler")}</p>
+        <h2 contenteditable="true">3. Təkliflər</h2>
+        <p contenteditable="true">${f("teklifler")}</p>
+        <p class="sig-space" contenteditable="true">Hazırladı: ${f("hazirlayan")} &nbsp;&nbsp;&nbsp; İmza: _____________________</p>
+      `;
+    }
+  },
+
+  mektub: {
+    label: "Rəsmi məktub",
+    hint: "Təşkilat və ya şəxslər arasında rəsmi yazışma, bildiriş və ya müraciət məktubu üçün istifadə olunur.",
+    required: ["gonderen_qurum","alici_qurum","metn"],
+    fields: [
+      {id:"gonderen_qurum", label:"Göndərənin adı / qurumu", type:"text", placeholder:"\"Nurlan Tech\" MMC"},
+      {id:"gonderen_unvan", label:"Göndərənin ünvanı", type:"text", placeholder:"Bakı ş., Yasamal r., ..."},
+      {id:"gonderen_elaqe", label:"Telefon / e-poçt", type:"text", placeholder:"+994 12 000 00 00, info@nurlantech.az"},
+      {id:"alici_qurum", label:"Alıcının adı / qurumu", type:"text", placeholder:"\"Progress Group\" MMC"},
+      {id:"alici_unvan", label:"Alıcının ünvanı", type:"text", placeholder:"Bakı ş., Nəsimi r., ..."},
+      {id:"movzu", label:"Mövzu", type:"text", placeholder:"Əməkdaşlıq təklifi haqqında"},
+      {id:"metn", label:"Məktubun mətni", type:"textarea", placeholder:"Hörmətli cənablar, ..."},
+      {id:"imza_sexs", label:"İmza edən şəxsin adı, vəzifəsi", type:"text", placeholder:"Direktor A. Məmmədov"},
+      {id:"sheher", label:"Şəhər", type:"text", placeholder:"Bakı"},
+      {id:"tarix", label:"Tarix", type:"text", placeholder:"07.07.2026"}
+    ],
+    render: (v) => {
+      const f = (id) => docsFmt(v[id], DOCS_EMPTY);
+      return `
+        <div class="doc-meta-block" contenteditable="true">
+          ${f("gonderen_qurum")}<br>
+          ${v.gonderen_unvan ? f("gonderen_unvan")+"<br>" : ""}
+          ${v.gonderen_elaqe ? f("gonderen_elaqe") : ""}
+        </div>
+        <div class="doc-meta" contenteditable="true" style="text-align:right;">${f("sheher")}, ${f("tarix")}</div>
+        <h1 contenteditable="true">RƏSMİ MƏKTUB</h1>
+        <p contenteditable="true"><strong>Kimə:</strong> ${f("alici_qurum")}${v.alici_unvan ? ", "+f("alici_unvan") : ""}</p>
+        ${v.movzu ? `<p class="doc-subject" contenteditable="true"><strong>Mövzu:</strong> ${f("movzu")}</p>` : ""}
+        <p contenteditable="true">${f("metn")}</p>
+        <p class="sig-space" contenteditable="true">Hörmətlə, ${f("imza_sexs")} &nbsp;&nbsp;&nbsp; İmza: _____________________</p>
+      `;
+    }
+  }
+
+};
+
+let docsCurrentTemplate = "ariza";
+let docsValues = {};
+
+function docsInitValues(){
+  docsValues = {};
+  docTemplates[docsCurrentTemplate].fields.forEach(fld => docsValues[fld.id] = "");
+}
+docsInitValues();
+
+function docsRenderTabs(){
+  const tabsEl = document.getElementById("docsTabs");
+  tabsEl.innerHTML = "";
+  Object.keys(docTemplates).forEach(key => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (key === docsCurrentTemplate ? " active" : "");
+    btn.textContent = docTemplates[key].label;
+    btn.onclick = () => { docsCurrentTemplate = key; docsInitValues(); docsRenderAll(); };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function docsRenderForm(){
+  const t = docTemplates[docsCurrentTemplate];
+  document.getElementById("docsFormTitle").textContent = t.label;
+  document.getElementById("docsFormHint").textContent = t.hint;
+  const container = document.getElementById("docsFormFields");
+  container.innerHTML = "";
+  t.fields.forEach(fld => {
+    const div = document.createElement("div");
+    div.className = "field";
+    const label = document.createElement("label");
+    label.textContent = fld.label;
+    div.appendChild(label);
+    let input;
+    if(fld.type === "textarea"){
+      input = document.createElement("textarea");
+    } else {
+      input = document.createElement("input");
+      input.type = "text";
+    }
+    input.placeholder = fld.placeholder || "";
+    input.value = docsValues[fld.id] || "";
+    input.oninput = (e) => { docsValues[fld.id] = e.target.value; docsRenderDoc(); };
+    div.appendChild(input);
+    container.appendChild(div);
+  });
+}
+
+function docsRenderDoc(){
+  const t = docTemplates[docsCurrentTemplate];
+  document.getElementById("docsDocContent").innerHTML = t.render(docsValues);
+  const complete = t.required.every(id => docsValues[id] && docsValues[id].trim());
+  document.getElementById("docsSeal").classList.toggle("show", complete);
+}
+
+function docsRenderAll(){
+  docsRenderTabs();
+  docsRenderForm();
+  docsRenderDoc();
+}
+
+document.getElementById("docsPrintBtn").onclick = () => window.print();
+
+document.getElementById("docsDownloadPdfBtn").onclick = () => {
+  const element = document.getElementById("docsPaper");
+  const opt = {
+    margin:       10,
+    filename:     docTemplates[docsCurrentTemplate].label.replace(/\s+/g,"_") + ".pdf",
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+};
+
+document.getElementById("docsDownloadDocxBtn").onclick = () => {
+  const content = document.getElementById("docsPaper").innerHTML;
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <title>${docTemplates[docsCurrentTemplate].label}</title>
+      <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.6; }
+        h1 { text-align: center; font-size: 16pt; text-transform: uppercase; }
+        h2 { font-size: 12pt; margin-top: 18pt; }
+        p { font-size: 11pt; text-align: justify; }
+        .doc-meta-block, .doc-meta { font-size: 10.5pt; }
+        .sig-space { margin-top: 30pt; }
+        .seal { display: none; }
+      </style>
+    </head>
+    <body>${content}</body>
+    </html>
+  `;
+  const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = docTemplates[docsCurrentTemplate].label.replace(/\s+/g,"_") + ".docx";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+docsRenderAll();
+
+})();
+</script>
+
+</body>
+</html>
